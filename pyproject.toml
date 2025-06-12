@@ -1,0 +1,27 @@
+[project]
+name = "pyquerytracker"
+version = "0.1.0"
+description = "A lightweight, decorator-based query performance tracking library for Python applications. Monitor and analyze database query performance with ease."
+authors = [
+    {name = "MuddyHope", email = "daktarisun@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+]
+keywords = ["performance", "database", "query", "decorator", "tracking"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+Repository = "https://github.com/MuddyHope/pyquerytracker"
+Issues = "https://github.com/MuddyHope/pyquerytracker/issues"
