@@ -11,8 +11,16 @@ venv/
 # VSCode
 .vscode/
 
+# Pycharm
+.idea/
+
 # Pytest cache
 .pytest_cache/
 
 # Jupyter
 .ipynb_checkpoints/
+
+
+# FIXME
+pyquerytracker.egg-info
+
