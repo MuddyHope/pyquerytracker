@@ -1,9 +1,54 @@
-# tests/test_core.py
 from pyquerytracker.core import track_query
+import pytest
+
 
 def test_tracking_output(capsys):
     @track_query
-    def fake_db_query(): return "done"
+    def fake_db_query():
+        return "done"
+
     assert fake_db_query() == "done"
-    captured = capsys.readouterr()
-    assert "Function fake_db_query took" in captured.out
+
+
+import logging  # noqa: E402
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+
+def test_tracking_output_with_logging(caplog):
+    caplog.set_level("INFO")
+
+    @track_query
+    def fake_db_query():
+        return "done"
+
+    result = fake_db_query()
+    assert result == "done"
+
+    # Check the log records
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.levelname == "INFO"
+    assert "Function fake_db_query executed successfully" in record.message
+    assert "ms" in record.message
+
+
+def test_tracking_output_with_error(caplog):
+    caplog.set_level("ERROR")
+
+    @track_query
+    def failing_query():
+        raise ValueError("Test error")
+
+    with pytest.raises(ValueError):
+        failing_query()
+
+    # Check the log records
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.levelname == "ERROR"
+    assert "Function failing_query failed" in record.message
+    assert "Test error" in record.message
+    assert "ms" in record.message
