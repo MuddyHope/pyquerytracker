@@ -1,5 +1,5 @@
 import logging
-from pyquerytracker.core import track_query
+from pyquerytracker.core import TrackQuery
 
 # Configure logging
 logging.basicConfig(
@@ -7,7 +7,7 @@ logging.basicConfig(
 )
 
 
-@track_query
+@TrackQuery()
 def failing_query():
     """A function that simulates a failed database query."""
     import time

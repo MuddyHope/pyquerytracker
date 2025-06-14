@@ -1,7 +1,7 @@
-from pyquerytracker.core import track_query
+from pyquerytracker.core import TrackQuery
 
 
-@track_query
+@TrackQuery()
 def simple_query():
     """A simple function that simulates a database query."""
     import time
