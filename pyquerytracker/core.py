@@ -1,12 +1,11 @@
 import time
 import logging
-from functools import wraps
-from typing import Any, Callable, TypeVar, cast
+from functools import update_wrapper
+from typing import Any, Callable, TypeVar, Generic
 
-# Configure the logger for this module
-logger = logging.getLogger(__name__)
 
-# Set up a default handler if none exists
+# Set up logger
+logger = logging.getLogger("pyquerytracker")
 if not logger.handlers:
     handler = logging.StreamHandler()
     formatter = logging.Formatter(
@@ -19,60 +18,77 @@ if not logger.handlers:
 T = TypeVar("T")
 
 
-def track_query(func: Callable[..., T]) -> Callable[..., T]:
+class TrackQuery(Generic[T]):
     """
-    Decorator that measures and logs the execution time of the decorated function.
-    Logs include function name, execution time, and any arguments passed.
+    Class-based decorator to track and log the execution time of functions or methods.
 
-    Args:
-        func (callable): The function whose execution time is to be tracked.
+    Logs include:
+    - Function name
+    - Class name (if method)
+    - Execution time (ms)
+    - Arguments
+    - Errors (if any)
 
-    Returns:
-        callable: The wrapped function that, when called, logs the duration
-                  of its execution and returns the original function's result.
-
-    Example:
-        @track_query
+    Usage:
+        @TrackQuery()
         def my_function():
-            pass
+            ...
     """
 
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> T:
-        start = time.perf_counter()
-        try:
-            result = func(*args, **kwargs)
-            duration = (time.perf_counter() - start) * 1000
+    def __init__(self) -> None:
+        pass  # Placeholder for future config
 
-            logger.info(
-                "Function %s executed successfully in %.2fms",
-                func.__name__,
-                duration,
-                extra={
-                    "function_name": func.__name__,
-                    "duration_ms": duration,
-                    "func_args": args,
-                    "func_kwargs": kwargs,
-                },
-            )
-            return result
-        except Exception as e:
-            duration = (time.perf_counter() - start) * 1000
+    def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
+        def wrapped(*args: Any, **kwargs: Any) -> T:
+            start = time.perf_counter()
+            class_name = None
 
-            logger.error(
-                "Function %s failed after %.2fms: %s",
-                func.__name__,
-                duration,
-                str(e),
-                exc_info=True,
-                extra={
-                    "function_name": func.__name__,
-                    "duration_ms": duration,
-                    "func_args": args,
-                    "func_kwargs": kwargs,
-                    "error": str(e),
-                },
-            )
-            raise
+            # Try to detect if this is an instance or class method
+            if args:
+                possible_self_or_cls = args[0]
+                if hasattr(possible_self_or_cls, "__class__"):
+                    if isinstance(possible_self_or_cls, type):
+                        # classmethod
+                        class_name = possible_self_or_cls.__name__
+                    else:
+                        # instance method
+                        class_name = possible_self_or_cls.__class__.__name__
 
-    return cast(Callable[..., T], wrapper)
+            try:
+                result = func(*args, **kwargs)
+                duration = (time.perf_counter() - start) * 1000
+                logger.info(
+                    "Function %s%s executed successfully in %.2fms",
+                    f"{class_name}." if class_name else "",
+                    func.__name__,
+                    duration,
+                    extra={
+                        "function_name": func.__name__,
+                        "class_name": class_name,
+                        "duration_ms": duration,
+                        "func_args": args,
+                        "func_kwargs": kwargs,
+                    },
+                )
+                return result
+            except Exception as e:
+                duration = (time.perf_counter() - start) * 1000
+                logger.error(
+                    "Function %s%s failed after %.2fms: %s",
+                    f"{class_name}." if class_name else "",
+                    func.__name__,
+                    duration,
+                    str(e),
+                    exc_info=True,
+                    extra={
+                        "function_name": func.__name__,
+                        "class_name": class_name,
+                        "duration_ms": duration,
+                        "func_args": args,
+                        "func_kwargs": kwargs,
+                        "error": str(e),
+                    },
+                )
+                raise
+
+        return update_wrapper(wrapped, func)

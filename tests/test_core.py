@@ -1,9 +1,9 @@
-from pyquerytracker.core import track_query
+from pyquerytracker.core import TrackQuery
 import pytest
 
 
 def test_tracking_output(capsys):
-    @track_query
+    @TrackQuery()
     def fake_db_query():
         return "done"
 
@@ -20,7 +20,7 @@ logging.basicConfig(
 def test_tracking_output_with_logging(caplog):
     caplog.set_level("INFO")
 
-    @track_query
+    @TrackQuery()
     def fake_db_query():
         return "done"
 
@@ -38,7 +38,7 @@ def test_tracking_output_with_logging(caplog):
 def test_tracking_output_with_error(caplog):
     caplog.set_level("ERROR")
 
-    @track_query
+    @TrackQuery()
     def failing_query():
         raise ValueError("Test error")
 
@@ -51,4 +51,22 @@ def test_tracking_output_with_error(caplog):
     assert record.levelname == "ERROR"
     assert "Function failing_query failed" in record.message
     assert "Test error" in record.message
+    assert "ms" in record.message
+
+
+def test_tracking_with_class(caplog):
+    class MyClass:
+        @TrackQuery()
+        def do_work(self, a, b):
+            import time
+
+            time.sleep(0.5)
+            return a * b
+
+    res = MyClass().do_work(2, 3)   # noqa: F841
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.levelname == "INFO"
+    assert "MyClass" in record.message
+    assert "do_work" in record.message
     assert "ms" in record.message

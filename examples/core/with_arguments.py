@@ -1,5 +1,5 @@
 import logging
-from pyquerytracker.core import track_query
+from pyquerytracker.core import TrackQuery
 
 # Configure logging
 logging.basicConfig(
@@ -7,7 +7,7 @@ logging.basicConfig(
 )
 
 
-@track_query
+@TrackQuery()
 def complex_query(user_id: int, query_type: str, limit: int = 10):
     """A function that simulates a complex database query with arguments."""
     import time

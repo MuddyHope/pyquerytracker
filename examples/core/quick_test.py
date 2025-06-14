@@ -1,21 +1,21 @@
-from pyquerytracker.core import track_query
+from pyquerytracker.core import TrackQuery
 import time
 
 
-@track_query
+@TrackQuery()
 def fast_query():
     """A function that executes quickly."""
     return "Fast query completed"
 
 
-@track_query
+@TrackQuery()
 def slow_query():
     """A function that takes some time to execute."""
     time.sleep(0.5)  # Simulate some work
     return "Slow query completed"
 
 
-@track_query
+@TrackQuery()
 def failing_query():
     """A function that raises an error."""
     time.sleep(0.2)  # Simulate some work
