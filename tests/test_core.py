@@ -1,4 +1,4 @@
-from pyquerytracker.core import TrackQuery
+from pyquerytracker import TrackQuery
 import pytest
 
 
@@ -63,7 +63,7 @@ def test_tracking_with_class(caplog):
             time.sleep(0.5)
             return a * b
 
-    res = MyClass().do_work(2, 3)   # noqa: F841
+    res = MyClass().do_work(2, 3)  # noqa: F841
     assert len(caplog.records) == 1
     record = caplog.records[0]
     assert record.levelname == "INFO"

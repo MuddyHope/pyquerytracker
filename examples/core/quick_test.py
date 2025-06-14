@@ -1,4 +1,4 @@
-from pyquerytracker.core import TrackQuery
+from pyquerytracker import TrackQuery
 import time
 
 
