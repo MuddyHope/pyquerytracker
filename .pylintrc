@@ -1,0 +1,45 @@
+[MASTER]
+
+# Files or directories to be ignored
+ignore=examples
+
+
+[MESSAGES CONTROL]
+# Disable some common false positives or less useful warnings for library code
+disable=
+    logging-fstring-interpolation,
+    missing-module-docstring,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-locals,
+    too-many-instance-attributes,
+    fixme,
+    duplicate-code,
+    import-error,
+    no-member
+
+[REPORTS]
+# Disable the full report, just show messages
+reports=no
+
+[FORMAT]
+# Max line length to match black's
+max-line-length=110
+
+# String used as indentation unit
+indent-string='    '
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=7
+
+# Maximum number of locals for function / method
+max-locals=20
+
+[LOGGING]
+# Warn about string formatting in logging calls
+logging-format-style=old
+
+[SIMILARITIES]
+# Minimum lines number of a similarity.
+min-similarity-lines=4

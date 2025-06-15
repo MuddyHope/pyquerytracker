@@ -18,28 +18,22 @@ class ExportType(str, Enum):
 
 
 @dataclass
-class TrackerConfig:
+class Config:
     """
     Configuration settings for the query tracking system.
 
     Attributes:
-        export_enabled (bool): Whether exporting of logs is enabled.
-        export_type (Optional[ExportType]): The format to export logs in (JSON or CSV).
-        export_path (Optional[str]): Path where exported logs should be saved.
         slow_log_threshold_ms (float): Threshold in milliseconds above which a query is considered slow.
                                         Defaults to 100.0 ms.
         slow_log_level (int): Logging level for slow query logs (e.g., logging.WARNING, logging.INFO).
                               Defaults to logging.WARNING.
     """
-
-    export_enabled: bool = False
-    export_type: Optional[ExportType] = None
-    export_path: Optional[str] = None
+    # TODO: Adding export functionality
     slow_log_threshold_ms: float = 100.0
     slow_log_level: int = logging.WARNING
 
 
-_config: TrackerConfig = TrackerConfig()
+_config: Config = Config()
 
 
 def configure(
@@ -61,7 +55,7 @@ def configure(
         _config.slow_log_level = slow_log_level
 
 
-def get_config() -> TrackerConfig:
+def get_config() -> Config:
     """
     Retrieve the current query tracking configuration.
 
