@@ -47,7 +47,11 @@ class TrackQuery(Generic[T]):
             if args:
                 possible_self_or_cls = args[0]
                 if hasattr(possible_self_or_cls, "__class__"):
-                    class_name = (possible_self_or_cls.__name__ if isinstance(possible_self_or_cls, type) else possible_self_or_cls.__class__.__name__)
+                    class_name = (
+                        possible_self_or_cls.__name__
+                        if isinstance(possible_self_or_cls, type)
+                        else possible_self_or_cls.__class__.__name__
+                    )
 
             log_data = {
                 "function_name": func.__name__,
@@ -99,8 +103,8 @@ class TrackQuery(Generic[T]):
 
     def _append_to_json_log(self, log_data: dict):
         try:
-            with open(self.json_log_path, 'a', encoding='utf-8') as f:
+            with open(self.json_log_path, "a", encoding="utf-8") as f:
                 json.dump(log_data, f)
-                f.write('\n')
+                f.write("\n")
         except Exception as e:
             logger.warning("Failed to write JSON log: %s", str(e))
