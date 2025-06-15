@@ -25,15 +25,38 @@ pip install pyquerytracker
 ```
 
 ## Usage
-
+### Basic Usage
 ```python
-from pyquerytracker import track_query
+import time
+from pyquerytracker import TrackQuery
 
-@track_query
+@TrackQuery()
 def run_query():
-    # Simulate SQL execution
-    time.sleep(0.3)
+    time.sleep(0.3)  # Simulate SQL execution
     return "SELECT * FROM users;"
 
 run_query()
 ```
+### Output
+```bash
+2025-06-14 14:23:00,123 - pyquerytracker - INFO - Function run_query executed successfully in 305.12ms
+```
+
+### With Configure
+```
+import logging
+from pyquerytracker.config import configure
+
+configure(
+    slow_log_threshold_ms=200,     # Log queries slower than 200ms
+    slow_log_level=logging.DEBUG   # Use DEBUG level for slow logs
+)
+```
+
+### Output
+```bash
+2025-06-14 14:24:45,456 - pyquerytracker - WARNING - Slow execution: run_query took 501.87ms
+```
+
+
+
