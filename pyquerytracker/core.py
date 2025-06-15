@@ -2,7 +2,7 @@ import time
 import logging
 from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
-
+from pyquerytracker.config import get_config
 
 # Set up logger
 logger = logging.getLogger("pyquerytracker")
@@ -36,7 +36,7 @@ class TrackQuery(Generic[T]):
     """
 
     def __init__(self) -> None:
-        pass  # Placeholder for future config
+        self.config = get_config()
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         def wrapped(*args: Any, **kwargs: Any) -> T:
@@ -57,19 +57,27 @@ class TrackQuery(Generic[T]):
             try:
                 result = func(*args, **kwargs)
                 duration = (time.perf_counter() - start) * 1000
-                logger.info(
-                    "Function %s%s executed successfully in %.2fms",
-                    f"{class_name}." if class_name else "",
-                    func.__name__,
-                    duration,
-                    extra={
-                        "function_name": func.__name__,
-                        "class_name": class_name,
-                        "duration_ms": duration,
-                        "func_args": args,
-                        "func_kwargs": kwargs,
-                    },
-                )
+                if duration > self.config.slow_log_threshold_ms:
+                    logger.log(
+                        self.config.slow_log_level,
+                        f"{class_name}.{func.__name__} -> Slow execution: took %.2fms",
+                        duration,
+                    )
+                    # logger.warning("Slow execution: %s took %.2fms", func.__name__, duration)
+                else:
+                    logger.info(
+                        "Function %s%s executed successfully in %.2fms",
+                        f"{class_name}." if class_name else "",
+                        func.__name__,
+                        duration,
+                        extra={
+                            "function_name": func.__name__,
+                            "class_name": class_name,
+                            "duration_ms": duration,
+                            "func_args": args,
+                            "func_kwargs": kwargs,
+                        },
+                    )
                 return result
             except Exception as e:
                 duration = (time.perf_counter() - start) * 1000
