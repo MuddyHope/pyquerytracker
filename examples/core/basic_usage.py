@@ -1,4 +1,6 @@
-from pyquerytracker import TrackQuery
+from pyquerytracker import TrackQuery, configure
+
+configure(slow_log_threshold_ms=1000, slow_log_level=20)
 
 
 @TrackQuery()

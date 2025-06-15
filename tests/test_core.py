@@ -60,7 +60,7 @@ def test_tracking_with_class(caplog):
         def do_work(self, a, b):
             import time
 
-            time.sleep(0.5)
+            time.sleep(0.09)
             return a * b
 
     res = MyClass().do_work(2, 3)  # noqa: F841
