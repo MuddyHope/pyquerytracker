@@ -60,13 +60,19 @@ class TrackQuery(Generic[T]):
                     if isinstance(possible_self_or_cls, type):
                         class_name = possible_self_or_cls.__name__  # classmethod
                     else:
-                        class_name = possible_self_or_cls.__class__.__name__  # instance method
+                        class_name = (
+                            possible_self_or_cls.__class__.__name__
+                        )  # instance method
 
             try:
                 result = func(*args, **kwargs)
                 duration = (time.perf_counter() - start) * 1000
                 log_data = {
-                    "event": "slow_execution" if duration > self.config.slow_log_threshold_ms else "normal_execution",
+                    "event": (
+                        "slow_execution"
+                        if duration > self.config.slow_log_threshold_ms
+                        else "normal_execution"
+                    ),
                     "function_name": func.__name__,
                     "class_name": class_name,
                     "duration_ms": duration,
