@@ -13,7 +13,6 @@ We appreciate all kinds of contributions, from code and documentation to bug rep
 
 ---
 
-
 ## Assumptions
 
 1. **You're familiar with [GitHub](https://github.com) and the [Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)(PR) workflow.**
@@ -27,8 +26,7 @@ We appreciate all kinds of contributions, from code and documentation to bug rep
 5. Make the changes on your branch.
 6. Submit the branch as a PR](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork) pointing to the `main` branch of the main meilisearch-python repository. A maintainer should comment and/or review your Pull Request within a few days. Although depending on the circumstances, it may take longer.<br>
 
-We do not enforce a naming convention for the PRs, but **please use something descriptive of your changes**, having in mind that the title of your PR will be automatically added to the next 
-
+We do not enforce a naming convention for the PRs, but **please use something descriptive of your changes**, having in mind that the title of your PR will be automatically added to the next
 
 ## 🧠 How You Can Contribute
 
@@ -45,28 +43,66 @@ Here are some ways you can help:
 
 ## 🛠️ Development Setup
 
-### Clone the repo
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/MuddyHope/pyquerytracker.git
 cd pyquerytracker
 ```
 
-### Pushing your changes
+### 2. Set up a virtual environment (optional but recommended)
+
+```bash
+python -m venv venv
+source venv/bin/activate  # on Windows use `venv\Scripts\activate`
+```
+
+### 3. Install development dependencies
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+---
+
+## 🧪 Running Tests and Linting
+
+### Run tests with Pytest
+
+```bash
+pytest
+```
+
+### Format code and sort imports
+
+```bash
+black .
+isort .
+```
+
+---
+
+## 🌿 Working on a Feature
+
+1. Create a new Git branch:
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
+2. Make your changes.
 
-###  Running Tests and Linting
-```bash
-cd pyquerytracker
-pip install -e .
+3. Push your branch and [open a Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork).
 
-pytest tests/
+---
 
-# Linting
-black .
-isort .
+## 📌 Pull Request Guidelines
 
-```
+- Make sure your changes address an existing [issue](https://github.com/MuddyHope/pyquerytracker/issues) or clearly explain what they fix or improve.
+- Follow existing formatting (`black`, `isort`).
+- Keep commits clean and descriptive.
+- A maintainer will review and may request changes before merging.
+
+---
+
+Thank you for contributing to PyQueryTracker! 💙
