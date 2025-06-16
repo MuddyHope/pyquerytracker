@@ -75,15 +75,10 @@ pytest
 
 ### Run Pylint for static code checks
 
-```bash
-pylint pyquerytracker
-```
-
-### Format code and sort imports
 
 ```bash
-black .
-isort .
+make lint 
+pytest
 ```
 
 ---
