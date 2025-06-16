@@ -1,5 +1,7 @@
 from pyquerytracker import TrackQuery
 import pytest
+import json
+from pyquerytracker.config import ExportType, get_config
 
 
 def test_tracking_output(capsys):
@@ -70,3 +72,28 @@ def test_tracking_with_class(caplog):
     assert "MyClass" in record.message
     assert "do_work" in record.message
     assert "ms" in record.message
+
+
+def test_log_export_to_json(tmp_path, monkeypatch):
+    export_path = tmp_path / "log.json"
+
+    # Monkeypatch the config to enable JSON export
+    config = get_config()
+    monkeypatch.setattr(config, "export_path", str(export_path))
+    monkeypatch.setattr(config, "export_type", ExportType.JSON)
+
+    @TrackQuery()
+    def simple_func(x):
+        return x + 1
+
+    result = simple_func(10)
+    assert result == 11
+
+    # Ensure the log file was created
+    assert export_path.exists()
+    with open(export_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+        assert len(lines) >= 1
+        log_entry = json.loads(lines[-1])
+        assert log_entry["function_name"] == "simple_func"
+        assert log_entry["event"] in ["normal_execution", "slow_execution"]

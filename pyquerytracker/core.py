@@ -44,7 +44,7 @@ class TrackQuery(Generic[T]):
     def export_log(self, log_data: dict):
         """
         Export log data to a JSON file if configured.
-        
+
         Parameters:
             log_data (dict): The data to log and export.
         """
