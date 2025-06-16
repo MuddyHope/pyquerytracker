@@ -1,16 +1,16 @@
-from pyquerytracker import TrackQuery
+import time
+import logging
 import pytest
+from pyquerytracker import TrackQuery
 
 
-def test_tracking_output(capsys):
+def test_tracking_output():
     @TrackQuery()
     def fake_db_query():
         return "done"
 
     assert fake_db_query() == "done"
 
-
-import logging  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -58,12 +58,10 @@ def test_tracking_with_class(caplog):
     class MyClass:
         @TrackQuery()
         def do_work(self, a, b):
-            import time
-
             time.sleep(0.09)
             return a * b
 
-    res = MyClass().do_work(2, 3)  # noqa: F841
+    MyClass().do_work(2, 3)
     assert len(caplog.records) == 1
     record = caplog.records[0]
     assert record.levelname == "INFO"
