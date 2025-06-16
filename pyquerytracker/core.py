@@ -63,7 +63,9 @@ class TrackQuery(Generic[T]):
                         f"{class_name}.{func.__name__} -> Slow execution: took %.2fms",
                         duration,
                     )
-                    # logger.warning("Slow execution: %s took %.2fms", func.__name__, duration)
+                    # logger.warning(
+                    #"Slow execution: %s took %.2fms", func.__name__, duration
+                    # )
                 else:
                     logger.info(
                         "Function %s%s executed successfully in %.2fms",
