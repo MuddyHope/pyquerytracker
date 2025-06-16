@@ -2,12 +2,15 @@ from pathlib import Path
 import json
 from pyquerytracker.config import configure, ExportType
 from pyquerytracker import TrackQuery
+import logging
+
 
 
 def test_log_export_to_json(tmp_path):
-    log_file = tmp_path / "out.jsonl"
+    log_file = tmp_path / "out.json"
     # configure for JSON export
     configure(export_type=ExportType.JSON, export_path=str(log_file))
+    logging.debug("Exporting to JSON log file: %s", log_file)
 
     @TrackQuery()
     def simple(x):
