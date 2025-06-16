@@ -31,10 +31,10 @@ class Config:
             Logging level for slow query logs (e.g., logging.WARNING, logging.INFO).
             Defaults to logging.WARNING.
     """
-
-    # TODO: Adding export functionality
     slow_log_threshold_ms: float = 100.0
     slow_log_level: int = logging.WARNING
+    export_type: ExportType = ExportType.JSON
+    export_path: Optional[str] = None
 
 
 _config: Config = Config()
