@@ -1,4 +1,5 @@
-name: Lint & Black
+name: Linting Workflow
+description: This workflow runs linters on the codebase to ensure code quality.
 
 on:
   push:
