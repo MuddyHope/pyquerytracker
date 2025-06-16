@@ -73,11 +73,12 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-### Format code and sort imports
+### Run Pylint for static code checks
+
 
 ```bash
-black .
-isort .
+make lint 
+pytest
 ```
 
 ---

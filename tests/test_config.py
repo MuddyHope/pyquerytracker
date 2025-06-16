@@ -1,4 +1,5 @@
 import logging
+import time
 
 from pyquerytracker import TrackQuery, configure
 
@@ -9,12 +10,11 @@ def test_configure_basic(caplog):
     class MyClass:
         @TrackQuery()
         def do_work(self, a, b):
-            import time
 
             time.sleep(0.5)
             return a * b
 
-    res = MyClass().do_work(2, 3)  # noqa: F841
+    MyClass().do_work(2, 3)
     assert len(caplog.records) == 1
     record = caplog.records[0]
     assert record.levelname == "WARNING"
@@ -30,12 +30,10 @@ def test_configure_basic_with_loglevel(caplog):
     class MyClass:
         @TrackQuery()
         def do_slow_work(self, a, b):
-            import time
-
             time.sleep(0.2)
             return a * b
 
-    res = MyClass().do_slow_work(2, 3)  # noqa: F841
+    MyClass().do_slow_work(2, 3)
     assert len(caplog.records) == 1
     record = caplog.records[0]
     assert record.levelname == "ERROR"

@@ -23,10 +23,13 @@ class Config:
     Configuration settings for the query tracking system.
 
     Attributes:
-        slow_log_threshold_ms (float): Threshold in milliseconds above which a query is considered slow.
-                                        Defaults to 100.0 ms.
-        slow_log_level (int): Logging level for slow query logs (e.g., logging.WARNING, logging.INFO).
-                              Defaults to logging.WARNING.
+        slow_log_threshold_ms (float):
+            Threshold in milliseconds above which a query is considered slow.
+            Defaults to 100.0 ms.
+
+        slow_log_level (int):
+            Logging level for slow query logs (e.g., logging.WARNING, logging.INFO).
+            Defaults to logging.WARNING.
     """
 
     slow_log_threshold_ms: float = 100.0
@@ -46,10 +49,13 @@ def configure(
     Configure global settings for query tracking.
 
     Args:
-        slow_log_threshold_ms (Optional[float]): Threshold in milliseconds to log a query as "slow".
-                                                 If not provided, defaults to 100.0 ms.
-        slow_log_level (Optional[int]): Logging level for slow queries (e.g., logging.INFO, logging.WARNING).
-                                        If not provided, defaults to logging.WARNING.
+        slow_log_threshold_ms (Optional[float]):
+            Threshold in milliseconds to log a query as "slow".
+            If not provided, defaults to 100.0 ms.
+
+        slow_log_level (Optional[int]):
+            Logging level for slow queries (e.g., logging.INFO, logging.WARNING).
+            If not provided, defaults to logging.WARNING.
     """
     if slow_log_threshold_ms is not None:
         _config.slow_log_threshold_ms = slow_log_threshold_ms

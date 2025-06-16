@@ -1,3 +1,12 @@
+![GitHub Release](https://img.shields.io/github/v/release/MuddyHope/pyquerytracker)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/MuddyHope/pyquerytracker)
+
+![PyPI - Downloads](https://img.shields.io/pypi/dm/pyquerytracker)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/MuddyHope/pyquerytracker/.github%2Fworkflows%2Fpublish.yml)
+![GitHub forks](https://img.shields.io/github/forks/MuddyHope/pyquerytracker)
+
+![PyPI - License](https://img.shields.io/pypi/l/pyquerytracker)
+
 # 🐍 pyquerytracker
 
 **pyquerytracker** is a lightweight Python utility to **track and analyze database query performance** using simple decorators. It enables developers to gain visibility into SQL execution time, log metadata, and export insights in JSON format — with optional FastAPI integration and scheduled reporting.
