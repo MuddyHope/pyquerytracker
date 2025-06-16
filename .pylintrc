@@ -15,7 +15,7 @@ disable=
 reports=no
 
 [FORMAT]
-max-line-length=100
+max-line-length=88
 
 [DESIGN]
 max-args=7
