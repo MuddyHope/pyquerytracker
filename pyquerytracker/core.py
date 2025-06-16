@@ -4,7 +4,7 @@ from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
 
 from pyquerytracker.config import get_config
-from pyquerytracker.json_exporter import JsonExporter
+from pyquerytracker.exporter import JsonExporter
 
 # Set up logger
 logger = logging.getLogger("pyquerytracker")
