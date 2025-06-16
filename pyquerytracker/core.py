@@ -42,6 +42,12 @@ class TrackQuery(Generic[T]):
         self.config = get_config()
 
     def export_log(self, log_data: dict):
+        """
+        Export log data to a JSON file if configured.
+        
+        Parameters:
+            log_data (dict): The data to log and export.
+        """
         if self.config.export_path and self.config.export_type == ExportType.JSON:
             os.makedirs(os.path.dirname(self.config.export_path), exist_ok=True)
             with open(self.config.export_path, "a", encoding="utf-8") as f:
