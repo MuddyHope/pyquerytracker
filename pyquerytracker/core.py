@@ -1,10 +1,10 @@
 import time
 import logging
-import json
-import os
 from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
-from pyquerytracker.config import get_config, ExportType
+
+from pyquerytracker.config import get_config
+from pyquerytracker.json_exporter import JsonExporter
 
 # Set up logger
 logger = logging.getLogger("pyquerytracker")
@@ -40,35 +40,24 @@ class TrackQuery(Generic[T]):
 
     def __init__(self) -> None:
         self.config = get_config()
-
-    def export_log(self, log_data: dict):
-        """
-        Export log data to a JSON file if configured.
-
-        Parameters:
-            log_data (dict): The data to log and export.
-        """
-        if self.config.export_path and self.config.export_type == ExportType.JSON:
-            os.makedirs(os.path.dirname(self.config.export_path), exist_ok=True)
-            with open(self.config.export_path, "a", encoding="utf-8") as f:
-                json.dump(log_data, f)
-                f.write("\n")
+        # delegate JSON-export responsibilities to JsonExporter
+        self._exporter = JsonExporter(self.config)
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         def wrapped(*args: Any, **kwargs: Any) -> T:
             start = time.perf_counter()
             class_name = None
 
-            # Detect if it's an instance or class method
+            # Detect if this is an instance or classmethod
             if args:
                 possible_self_or_cls = args[0]
                 if hasattr(possible_self_or_cls, "__class__"):
                     if isinstance(possible_self_or_cls, type):
-                        class_name = possible_self_or_cls.__name__  # classmethod
+                        # classmethod
+                        class_name = possible_self_or_cls.__name__
                     else:
-                        class_name = (
-                            possible_self_or_cls.__class__.__name__
-                        )  # instance method
+                        # instance method
+                        class_name = possible_self_or_cls.__class__.__name__
 
             try:
                 result = func(*args, **kwargs)
@@ -89,7 +78,9 @@ class TrackQuery(Generic[T]):
                 if duration > self.config.slow_log_threshold_ms:
                     logger.log(
                         self.config.slow_log_level,
-                        f"{class_name}.{func.__name__} -> Slow execution: took %.2fms",
+                        "%s.%s → Slow execution: took %.2fms",
+                        class_name or "<module>",
+                        func.__name__,
                         duration,
                     )
                 else:
@@ -101,7 +92,8 @@ class TrackQuery(Generic[T]):
                         extra=log_data,
                     )
 
-                self.export_log(log_data)
+                # append to JSON export if enabled
+                self._exporter.append(log_data)
                 return result
 
             except Exception as e:
@@ -115,6 +107,7 @@ class TrackQuery(Generic[T]):
                     "func_kwargs": repr(kwargs),
                     "error": str(e),
                 }
+
                 logger.error(
                     "Function %s%s failed after %.2fms: %s",
                     f"{class_name}." if class_name else "",
@@ -124,7 +117,9 @@ class TrackQuery(Generic[T]):
                     exc_info=True,
                     extra=log_data,
                 )
-                self.export_log(log_data)
+
+                # append error record as well
+                self._exporter.append(log_data)
                 raise
 
         return update_wrapper(wrapped, func)

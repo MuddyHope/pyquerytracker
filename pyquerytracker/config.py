@@ -1,3 +1,5 @@
+# pyquerytracker/config.py
+
 from enum import Enum
 from dataclasses import dataclass
 from typing import Optional
@@ -7,10 +9,6 @@ import logging
 class ExportType(str, Enum):
     """
     Enum representing supported export formats for query tracking logs.
-
-    Attributes:
-        JSON: Export logs in JSON format.
-        CSV: Export logs in CSV format.
     """
 
     JSON = "json"
@@ -25,11 +23,12 @@ class Config:
     Attributes:
         slow_log_threshold_ms (float):
             Threshold in milliseconds above which a query is considered slow.
-            Defaults to 100.0 ms.
-
         slow_log_level (int):
-            Logging level for slow query logs (e.g., logging.WARNING, logging.INFO).
-            Defaults to logging.WARNING.
+            Logging level for slow query logs.
+        export_type (ExportType):
+            Format to export logs in.
+        export_path (Optional[str]):
+            File path to append exported logs to (if set).
     """
 
     slow_log_threshold_ms: float = 100.0
@@ -42,32 +41,40 @@ _config: Config = Config()
 
 
 def configure(
+    *,
     slow_log_threshold_ms: Optional[float] = None,
     slow_log_level: Optional[int] = None,
+    export_type: Optional[ExportType] = None,
+    export_path: Optional[str] = None,
 ):
     """
     Configure global settings for query tracking.
 
-    Args:
+    Keyword Args:
         slow_log_threshold_ms (Optional[float]):
-            Threshold in milliseconds to log a query as "slow".
-            If not provided, defaults to 100.0 ms.
-
+            If set, override the default "slow" threshold.
         slow_log_level (Optional[int]):
-            Logging level for slow queries (e.g., logging.INFO, logging.WARNING).
-            If not provided, defaults to logging.WARNING.
+            If set, override the default log level for "slow" events.
+        export_type (Optional[ExportType]):
+            If set, choose how logs are exported (e.g. JSON vs CSV).
+        export_path (Optional[str]):
+            If set, file path to append exported logs to.
     """
     if slow_log_threshold_ms is not None:
         _config.slow_log_threshold_ms = slow_log_threshold_ms
+
     if slow_log_level is not None:
         _config.slow_log_level = slow_log_level
+
+    if export_type is not None:
+        _config.export_type = export_type
+
+    if export_path is not None:
+        _config.export_path = export_path
 
 
 def get_config() -> Config:
     """
     Retrieve the current query tracking configuration.
-
-    Returns:
-        TrackerConfig: The current configuration settings.
     """
     return _config
