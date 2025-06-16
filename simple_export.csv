@@ -1,0 +1,16 @@
+timestamp,function_name,class_name,duration_ms,status,error_message,args_count,kwargs_count
+2025-06-16T04:15:44.362726,fast_query,,50.17417299995941,success,,0,0
+2025-06-16T04:15:44.613488,slow_query,,250.20788400024685,success,,0,0
+2025-06-16T04:15:44.664054,fast_query,,50.18440300000293,success,,0,0
+2025-06-16T04:15:44.914860,slow_query,,250.35675799972523,success,,0,0
+2025-06-16T04:15:44.965332,fast_query,,50.17221199977939,success,,0,0
+2025-06-16T04:15:45.215940,slow_query,,250.19100999998045,success,,0,0
+,,,,,,,
+,,,,,,,
+SUMMARY STATISTICS,,,,,,,
+total_queries,6,,,,,,
+successful_queries,6,,,,,,
+failed_queries,0,,,,,,
+average_duration_ms,150.2144066666157,,,,,,
+min_duration_ms,50.17221199977939,,,,,,
+max_duration_ms,250.35675799972523,,,,,,

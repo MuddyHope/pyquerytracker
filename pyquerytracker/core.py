@@ -3,6 +3,7 @@ import logging
 from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
 from pyquerytracker.config import get_config
+from pyquerytracker.export import get_tracker
 
 # Set up logger
 logger = logging.getLogger("pyquerytracker")
@@ -37,6 +38,7 @@ class TrackQuery(Generic[T]):
 
     def __init__(self) -> None:
         self.config = get_config()
+        self.tracker = get_tracker()
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         def wrapped(*args: Any, **kwargs: Any) -> T:
@@ -78,6 +80,17 @@ class TrackQuery(Generic[T]):
                             "func_kwargs": kwargs,
                         },
                     )
+
+                # Record successful execution for export
+                self.tracker.add_record(
+                    function_name=func.__name__,
+                    class_name=class_name,
+                    duration_ms=duration,
+                    status="success",
+                    args_count=len(args),
+                    kwargs_count=len(kwargs),
+                )
+
                 return result
             except Exception as e:
                 duration = (time.perf_counter() - start) * 1000
@@ -97,6 +110,18 @@ class TrackQuery(Generic[T]):
                         "error": str(e),
                     },
                 )
+
+                # Record failed execution for export
+                self.tracker.add_record(
+                    function_name=func.__name__,
+                    class_name=class_name,
+                    duration_ms=duration,
+                    status="error",
+                    error_message=str(e),
+                    args_count=len(args),
+                    kwargs_count=len(kwargs),
+                )
+
                 raise
 
         return update_wrapper(wrapped, func)

@@ -9,12 +9,16 @@
 - ✅ Easy-to-use decorator to track function execution (e.g., SQL queries)
 - ✅ Capture runtime, function name, args, return values, and more
 
-## TODO Features
 - ✅ Export logs to JSON or CSV
+- ✅ Summary statistics and data analysis
+- ✅ Memory-efficient data collection
+- ✅ Configurable export options
+
+## TODO Features
 - ✅ FastAPI integration to expose tracked metrics via REST API
 - ✅ Schedule periodic exports using `APScheduler`
 - ✅ Plug-and-play with any Python database client (SQLAlchemy, psycopg2, etc.)
-- ✅ Modular and extensible design
+- ✅ Advanced filtering and querying capabilities
 
 ---
 
@@ -57,6 +61,59 @@ configure(
 ```bash
 2025-06-14 14:24:45,456 - pyquerytracker - WARNING - Slow execution: run_query took 501.87ms
 ```
+
+### Export to CSV/JSON
+```python
+import time
+from pyquerytracker import TrackQuery, export_data, ExportType, get_summary
+
+@TrackQuery()
+def database_query():
+    time.sleep(0.1)  # Simulate query execution
+    return "SELECT * FROM users;"
+
+# Execute some tracked functions
+for i in range(5):
+    database_query()
+
+# Export to CSV
+export_data(ExportType.CSV, "query_export.csv", include_summary=True)
+
+# Export to JSON
+export_data(ExportType.JSON, "query_export.json", include_summary=True)
+
+# Get summary statistics
+stats = get_summary()
+print(f"Total queries: {stats['total_queries']}")
+print(f"Average duration: {stats['average_duration_ms']:.2f}ms")
+```
+
+### CSV Export Output Example
+```csv
+timestamp,function_name,class_name,duration_ms,status,error_message,args_count,kwargs_count
+2025-06-14T14:23:00.123456,database_query,,102.34,success,,0,0
+2025-06-14T14:23:01.234567,database_query,,98.76,success,,0,0
+2025-06-14T14:23:02.345678,database_query,,105.43,success,,0,0
+
+SUMMARY STATISTICS
+total_queries,5
+successful_queries,5
+failed_queries,0
+average_duration_ms,101.23
+min_duration_ms,98.76
+max_duration_ms,105.43
+```
+
+### API Reference
+
+#### Export Functions
+- [`export_data(export_type, filepath, include_summary=True, clear_after_export=False)`](pyquerytracker/export.py) - Export tracked data to file
+- [`get_summary()`](pyquerytracker/export.py) - Get summary statistics
+- [`clear_data()`](pyquerytracker/export.py) - Clear all tracked data
+
+#### Export Types
+- [`ExportType.CSV`](pyquerytracker/config.py) - Export as CSV format
+- [`ExportType.JSON`](pyquerytracker/config.py) - Export as JSON format
 
 
 
