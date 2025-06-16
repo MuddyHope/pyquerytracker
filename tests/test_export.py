@@ -4,8 +4,8 @@ import csv
 import json
 from pathlib import Path
 from unittest.mock import patch
-from pyquerytracker.export import (
-    QueryRecord, QueryTracker, CSVExporter, 
+from pyquerytracker.config import (
+    QueryRecord, QueryTracker, CSVExporter,
     export_data, get_summary, clear_data, get_tracker
 )
 from pyquerytracker.config import ExportType

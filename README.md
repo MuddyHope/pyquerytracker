@@ -17,7 +17,6 @@
 
 - ✅ Easy-to-use decorator to track function execution (e.g., SQL queries)
 - ✅ Capture runtime, function name, args, return values, and more
-
 - ✅ Export logs to JSON or CSV
 - ✅ Summary statistics and data analysis
 - ✅ Memory-efficient data collection
@@ -116,9 +115,9 @@ max_duration_ms,105.43
 ### API Reference
 
 #### Export Functions
-- [`export_data(export_type, filepath, include_summary=True, clear_after_export=False)`](pyquerytracker/export.py) - Export tracked data to file
-- [`get_summary()`](pyquerytracker/export.py) - Get summary statistics
-- [`clear_data()`](pyquerytracker/export.py) - Clear all tracked data
+- [`export_data(export_type, filepath, include_summary=True, clear_after_export=False)`](pyquerytracker/config.py) - Export tracked data to file
+- [`get_summary()`](pyquerytracker/config.py) - Get summary statistics
+- [`clear_data()`](pyquerytracker/config.py) - Clear all tracked data
 
 #### Export Types
 - [`ExportType.CSV`](pyquerytracker/config.py) - Export as CSV format

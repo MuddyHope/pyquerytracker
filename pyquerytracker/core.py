@@ -2,8 +2,7 @@ import time
 import logging
 from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
-from pyquerytracker.config import get_config
-from pyquerytracker.export import get_tracker
+from pyquerytracker.config import get_config, get_tracker
 
 # Set up logger
 logger = logging.getLogger("pyquerytracker")
