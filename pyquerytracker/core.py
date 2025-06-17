@@ -20,14 +20,23 @@ if not logger.handlers:
 
 T = TypeVar("T")
 
-# Singleton exporter instance (no global keyword)
-_exporter_instance: JsonExporter | None = None
+#~~bro screw this~~
+class _ExporterManager:
+    _instance: JsonExporter | None = None
+
+    @classmethod
+    def set(cls, exporter: JsonExporter) -> None:
+        cls._instance = exporter
+
+    @classmethod
+    def flush(cls) -> None:
+        if cls._instance is not None:
+            cls._instance.flush()
 
 
 def flush_exported_logs() -> None:
     """Manually flushes the JSON exporter buffer to disk, if initialized."""
-    if _exporter_instance is not None:
-        _exporter_instance.flush()
+    _ExporterManager.flush()
 
 
 class TrackQuery(Generic[T]):
@@ -50,10 +59,8 @@ class TrackQuery(Generic[T]):
 
     def __init__(self) -> None:
         self.config = get_config()
-        exporter = JsonExporter(self.config)
-        global _exporter_instance  # okay now: short-lived and safe
-        _exporter_instance = exporter
-        self._exporter = exporter
+        self._exporter = JsonExporter(self.config)
+        _ExporterManager.set(self._exporter)
         atexit.register(self._exporter.flush)
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
