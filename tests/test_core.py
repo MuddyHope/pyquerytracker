@@ -1,7 +1,7 @@
 import time
 import logging
 import pytest
-import asyncio  #  Added for async test
+import asyncio  # Added for async test
 from pyquerytracker import TrackQuery
 
 
@@ -9,12 +9,12 @@ def test_tracking_output():
     @TrackQuery()
     def fake_db_query():
         return "done"
-
     assert fake_db_query() == "done"
 
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 
@@ -71,7 +71,7 @@ def test_tracking_with_class(caplog):
     assert "ms" in record.message
 
 
-#  New test case added for async support
+# New test case added for async support
 @pytest.mark.asyncio
 async def test_async_tracking(caplog):
     caplog.set_level("INFO")

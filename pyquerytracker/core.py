@@ -1,7 +1,7 @@
 import time
 import logging
-import inspect  #  Added to detect coroutine functions
-import asyncio  #  Needed for async handling
+import inspect
+# import asyncio
 from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
 from pyquerytracker.config import get_config
