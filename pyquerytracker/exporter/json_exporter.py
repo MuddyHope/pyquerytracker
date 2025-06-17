@@ -26,4 +26,4 @@ class JsonExporter:
         # threadsafe append
         with _lock, self._path.open("a", encoding="utf-8") as f:
             json.dump(record, f)
-            f.write("\n")
+            f.write(",\n")
