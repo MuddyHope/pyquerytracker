@@ -2,26 +2,23 @@ import time
 import logging
 import atexit
 from functools import update_wrapper
-from typing import Any, Callable, TypeVar, Generic
+from typing import Any, Callable, TypeVar, Generic, Optional
 
-from pyquerytracker.config import get_config
+from pyquerytracker.config import get_config, ExportType
 from pyquerytracker.exporter import JsonExporter
 
-# Set up logger
+# Set up logger (unchanged) …
 logger = logging.getLogger("pyquerytracker")
 if not logger.handlers:
     handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    handler.setFormatter(formatter)
+    fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    handler.setFormatter(fmt)
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 
 T = TypeVar("T")
 
 
-# Exporter manager to remove usage of global keyword
 class _ExporterManager:
     _instance: JsonExporter | None = None
 
@@ -36,7 +33,10 @@ class _ExporterManager:
 
 
 def flush_exported_logs() -> None:
-    """Manually flushes the JSON exporter buffer to disk, if initialized."""
+    """
+    Manually flushes the JSON exporter buffer to disk, if initialized.
+    Always returns None.
+    """
     _ExporterManager.flush()
 
 
@@ -58,30 +58,47 @@ class TrackQuery(Generic[T]):
             ...
     """
 
-    def __init__(self) -> None:
-        self.config = get_config()
+    # shared exporter and the values that built it
+    _exporter: JsonExporter | None = None
+    _last_export_path: Optional[str] = None
+    _last_export_type: Optional[ExportType] = None
 
-        # only on first decorator instantiation do we make/register the exporter
-        if _ExporterManager._instance is None:
-            exporter = JsonExporter(self.config)
+    def __init__(self) -> None:
+        cfg = get_config()
+
+        # detect “first time” OR config’s export settings changed
+        need_rebuild = (
+            TrackQuery._exporter is None
+            or cfg.export_path != TrackQuery._last_export_path
+            or cfg.export_type != TrackQuery._last_export_type
+        )
+
+        if need_rebuild:
+            exporter = JsonExporter(cfg)
             _ExporterManager.set(exporter)
             atexit.register(exporter.flush)
 
-        # every decorator reuses that same exporter
-        self._exporter = _ExporterManager._instance
+            TrackQuery._exporter = exporter
+            TrackQuery._last_export_path = cfg.export_path
+            TrackQuery._last_export_type = cfg.export_type
+
+        # instance fields
+        self.config = cfg
+        self._exporter = TrackQuery._exporter
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         def wrapped(*args: Any, **kwargs: Any) -> T:
             start = time.perf_counter()
-            class_name = None
+            class_name: Optional[str] = None
 
             if args:
-                possible_self_or_cls = args[0]
-                if hasattr(possible_self_or_cls, "__class__"):
-                    if isinstance(possible_self_or_cls, type):
-                        class_name = possible_self_or_cls.__name__
-                    else:
-                        class_name = possible_self_or_cls.__class__.__name__
+                first = args[0]
+                if hasattr(first, "__class__"):
+                    class_name = (
+                        first.__name__
+                        if isinstance(first, type)
+                        else first.__class__.__name__
+                    )
 
             try:
                 result = func(*args, **kwargs)

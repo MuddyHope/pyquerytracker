@@ -4,26 +4,31 @@ from pyquerytracker.config import configure, ExportType
 
 # ✅ Step 1: Configure tracking
 configure(
-    slow_log_threshold_ms=50,             # Set threshold for slow queries
-    slow_log_level=logging.WARNING,       # Logging level for slow queries
-    export_type=ExportType.JSON,          # Export to JSON
-    export_path="logs/queries_2.json"       # File to export logs
+    slow_log_threshold_ms=50,  # Set threshold for slow queries
+    slow_log_level=logging.WARNING,  # Logging level for slow queries
+    export_type=ExportType.JSON,  # Export to JSON
+    export_path="logs/queries_2.json",  # File to export logs
 )
+
 
 # ✅ Step 2: Decorate functions
 @TrackQuery()
 def fast_function(x, y):
     return x + y
 
+
 @TrackQuery()
 def slow_function(x):
     import time
-    time.sleep(0.049)  # 100ms
+
+    time.sleep(0.062)  # 62ms
     return x * 2
+
 
 @TrackQuery()
 def faulty_function():
     raise ValueError("Simulated failure")
+
 
 # ✅ Step 3: Run functions and observe logs
 if __name__ == "__main__":
