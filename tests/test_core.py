@@ -1,6 +1,7 @@
 import time
 import logging
 import pytest
+import asyncio  #  Added for async test
 from pyquerytracker import TrackQuery
 
 
@@ -68,3 +69,19 @@ def test_tracking_with_class(caplog):
     assert "MyClass" in record.message
     assert "do_work" in record.message
     assert "ms" in record.message
+
+
+#  New test case added for async support
+@pytest.mark.asyncio
+async def test_async_tracking(caplog):
+    caplog.set_level("INFO")
+
+    @TrackQuery()
+    async def async_query():
+        await asyncio.sleep(0.1)
+        return "async done"
+
+    result = await async_query()
+    assert result == "async done"
+    assert len(caplog.records) == 1
+    assert "executed successfully" in caplog.records[0].message
