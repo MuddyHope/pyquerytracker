@@ -1,5 +1,6 @@
 import time
 import logging
+import atexit
 from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
 
@@ -18,6 +19,15 @@ if not logger.handlers:
     logger.setLevel(logging.INFO)
 
 T = TypeVar("T")
+
+# Singleton exporter instance (no global keyword)
+_exporter_instance: JsonExporter | None = None
+
+
+def flush_exported_logs() -> None:
+    """Manually flushes the JSON exporter buffer to disk, if initialized."""
+    if _exporter_instance is not None:
+        _exporter_instance.flush()
 
 
 class TrackQuery(Generic[T]):
@@ -40,23 +50,23 @@ class TrackQuery(Generic[T]):
 
     def __init__(self) -> None:
         self.config = get_config()
-        # delegate JSON-export responsibilities to JsonExporter
-        self._exporter = JsonExporter(self.config)
+        exporter = JsonExporter(self.config)
+        global _exporter_instance  # okay now: short-lived and safe
+        _exporter_instance = exporter
+        self._exporter = exporter
+        atexit.register(self._exporter.flush)
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         def wrapped(*args: Any, **kwargs: Any) -> T:
             start = time.perf_counter()
             class_name = None
 
-            # Detect if this is an instance or classmethod
             if args:
                 possible_self_or_cls = args[0]
                 if hasattr(possible_self_or_cls, "__class__"):
                     if isinstance(possible_self_or_cls, type):
-                        # classmethod
                         class_name = possible_self_or_cls.__name__
                     else:
-                        # instance method
                         class_name = possible_self_or_cls.__class__.__name__
 
             try:
@@ -92,7 +102,6 @@ class TrackQuery(Generic[T]):
                         extra=log_data,
                     )
 
-                # append to JSON export if enabled
                 self._exporter.append(log_data)
                 return result
 
@@ -118,7 +127,6 @@ class TrackQuery(Generic[T]):
                     extra=log_data,
                 )
 
-                # append error record as well
                 self._exporter.append(log_data)
                 raise
 

@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 from pyquerytracker.config import configure, ExportType
+from pyquerytracker.core import flush_exported_logs
 from pyquerytracker import TrackQuery
 import logging
 
@@ -17,11 +18,12 @@ def test_log_export_to_json(tmp_path):
         return x + 1
 
     assert simple(10) == 11
+    assert flush_exported_logs() is None  # No return value expected
     assert log_file.exists()
 
     with log_file.open() as f:
-        lines = f.readlines()
-        assert len(lines) >= 1
-        entry = json.loads(lines[-1])
+        entries = json.load(f)
+        assert len(entries) >= 1
+        entry = entries[-1]
         assert entry["function_name"] == "simple"
         assert entry["event"] in ("normal_execution", "slow_execution")

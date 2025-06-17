@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from threading import Lock
-from typing import Optional, Dict
+from typing import Dict
 from pyquerytracker.config import Config, ExportType
 
 _lock = Lock()
@@ -9,21 +9,22 @@ _lock = Lock()
 
 class JsonExporter:
     """
-    Handles appending JSON‐lines to a file in a threadsafe way.
+    Handles appending JSON objects to a file in a thread-safe way.
     """
 
     def __init__(self, config: Config):
-        self._path: Optional[Path] = (
-            Path(config.export_path) if config.export_path else None
+        self._enabled = bool(config.export_path) and (
+            config.export_type == ExportType.JSON
         )
-        self._enabled = bool(self._path) and config.export_type == ExportType.JSON
+        self._path = Path(config.export_path) if config.export_path else None
+        self._buffer = []
 
     def append(self, record: Dict) -> None:
-        if not self._enabled:
-            return
-        # ensure directory exists
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        # threadsafe append
-        with _lock, self._path.open("a", encoding="utf-8") as f:
-            json.dump(record, f)
-            f.write(",\n")
+        if self._enabled:
+            self._buffer.append(record)
+
+    def flush(self) -> None:
+        if self._enabled and self._buffer:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            with _lock, self._path.open("w", encoding="utf-8") as f:
+                json.dump(self._buffer, f, indent=2)
