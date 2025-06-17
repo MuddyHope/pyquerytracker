@@ -60,9 +60,15 @@ class TrackQuery(Generic[T]):
 
     def __init__(self) -> None:
         self.config = get_config()
-        self._exporter = JsonExporter(self.config)
-        _ExporterManager.set(self._exporter)
-        atexit.register(self._exporter.flush)
+
+        # only on first decorator instantiation do we make/register the exporter
+        if _ExporterManager._instance is None:
+            exporter = JsonExporter(self.config)
+            _ExporterManager.set(exporter)
+            atexit.register(exporter.flush)
+
+        # every decorator reuses that same exporter
+        self._exporter = _ExporterManager._instance
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
         def wrapped(*args: Any, **kwargs: Any) -> T:
