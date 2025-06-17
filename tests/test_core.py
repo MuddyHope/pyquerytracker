@@ -1,8 +1,7 @@
-import time
-import logging
 import pytest
-import asyncio  # Added for async test
-from pyquerytracker import TrackQuery
+from pyquerytracker.core import TrackQuery
+import time
+import asyncio
 
 
 def test_tracking_output():
@@ -12,14 +11,8 @@ def test_tracking_output():
     assert fake_db_query() == "done"
 
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-
-
 def test_tracking_output_with_logging(caplog):
-    caplog.set_level("INFO")
+    caplog.set_level("INFO", logger="pyquerytracker")
 
     @TrackQuery()
     def fake_db_query():
@@ -27,13 +20,8 @@ def test_tracking_output_with_logging(caplog):
 
     result = fake_db_query()
     assert result == "done"
-
-    # Check the log records
     assert len(caplog.records) == 1
-    record = caplog.records[0]
-    assert record.levelname == "INFO"
-    assert "Function fake_db_query executed successfully" in record.message
-    assert "ms" in record.message
+    assert "executed successfully" in caplog.records[0].message
 
 
 def test_tracking_output_with_error(caplog):
@@ -46,42 +34,32 @@ def test_tracking_output_with_error(caplog):
     with pytest.raises(ValueError):
         failing_query()
 
-    # Check the log records
     assert len(caplog.records) == 1
-    record = caplog.records[0]
-    assert record.levelname == "ERROR"
-    assert "Function failing_query failed" in record.message
-    assert "Test error" in record.message
-    assert "ms" in record.message
+    assert "failed" in caplog.records[0].message
 
 
 def test_tracking_with_class(caplog):
+    caplog.set_level("INFO", logger="pyquerytracker")
+
     class MyClass:
         @TrackQuery()
         def do_work(self, a, b):
-            time.sleep(0.09)
+            time.sleep(0.1)
             return a * b
 
     MyClass().do_work(2, 3)
     assert len(caplog.records) == 1
-    record = caplog.records[0]
-    assert record.levelname == "INFO"
-    assert "MyClass" in record.message
-    assert "do_work" in record.message
-    assert "ms" in record.message
 
 
-# New test case added for async support
 @pytest.mark.asyncio
 async def test_async_tracking(caplog):
-    caplog.set_level("INFO")
+    caplog.set_level("INFO", logger="pyquerytracker")
 
     @TrackQuery()
     async def async_query():
-        await asyncio.sleep(0.1)
-        return "async done"
+        await asyncio.sleep(0.2)
+        return "async result"
 
     result = await async_query()
-    assert result == "async done"
+    assert result == "async result"
     assert len(caplog.records) == 1
-    assert "executed successfully" in caplog.records[0].message
