@@ -20,7 +20,8 @@ if not logger.handlers:
 
 T = TypeVar("T")
 
-#Exporter manager to remove usage of global keyword
+
+# Exporter manager to remove usage of global keyword
 class _ExporterManager:
     _instance: JsonExporter | None = None
 
