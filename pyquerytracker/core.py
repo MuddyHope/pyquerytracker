@@ -99,7 +99,7 @@ class TrackQuery(Generic[T]):
                 if duration > self.config.slow_log_threshold_ms:
                     logger.log(
                         self.config.slow_log_level,
-                        "Function %s.%s took %.2fms, which is slower than the threshold of %.2fms",
+                        "Function %s.%s took %.2fms, slower than %.2fms",
                         class_name or "<module>",
                         func.__name__,
                         duration,
