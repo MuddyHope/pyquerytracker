@@ -1,19 +1,10 @@
 import time
-import logging
 from functools import update_wrapper
 from typing import Any, Callable, TypeVar, Generic
 from pyquerytracker.config import get_config
+from pyquerytracker.utils.logger import QueryLogger
 
-# Set up logger
-logger = logging.getLogger("pyquerytracker")
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+logger = QueryLogger.get_logger()
 
 T = TypeVar("T")
 
@@ -97,6 +88,8 @@ class TrackQuery(Generic[T]):
                         "error": str(e),
                     },
                 )
-                raise
+                # Exceptions are handled internally by the decorator,
+                # allowing the program to proceed smoothly
+                return None
 
         return update_wrapper(wrapped, func)
