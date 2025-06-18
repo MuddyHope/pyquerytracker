@@ -42,8 +42,8 @@ def test_tracking_output_with_error(caplog):
     def failing_query():
         raise ValueError("Test error")
 
-    with pytest.raises(ValueError):
-        failing_query()
+    result = failing_query()
+    assert result is None
 
     # Check the log records
     assert len(caplog.records) == 1
