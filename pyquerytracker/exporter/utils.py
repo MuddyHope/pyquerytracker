@@ -1,5 +1,6 @@
 from pyquerytracker.exporter import JsonExporter
 
+
 class _ExporterManager:
     _instance: JsonExporter | None = None
 

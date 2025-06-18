@@ -20,7 +20,6 @@ if not logger.handlers:
 T = TypeVar("T")
 
 
-
 class TrackQuery(Generic[T]):
     """
     Class-based decorator to track and log the execution time of functions or methods.
