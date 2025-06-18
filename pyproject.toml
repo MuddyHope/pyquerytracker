@@ -25,3 +25,15 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/MuddyHope/pyquerytracker"
 Issues = "https://github.com/MuddyHope/pyquerytracker/issues"
+
+
+# This new table declares optional dependencies for testing and development.
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "flake8",
+    "black",
+    "isort",
+    "pylint"
+]
