@@ -20,7 +20,8 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
+# Build artifacts
+dist/
 
 # FIXME
 pyquerytracker.egg-info
-

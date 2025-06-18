@@ -25,3 +25,13 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/MuddyHope/pyquerytracker"
 Issues = "https://github.com/MuddyHope/pyquerytracker/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.package-data]
+pyquerytracker = ["py.typed"]
