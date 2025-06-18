@@ -6,8 +6,9 @@ from typing import Any, Callable, TypeVar, Generic, Optional
 
 from pyquerytracker.config import get_config, ExportType
 from pyquerytracker.exporter import JsonExporter
+from pyquerytracker.exporter.utils import _ExporterManager
 
-# Set up logger (unchanged) …
+# Set up logger (unchanged)
 logger = logging.getLogger("pyquerytracker")
 if not logger.handlers:
     handler = logging.StreamHandler()
@@ -18,26 +19,6 @@ if not logger.handlers:
 
 T = TypeVar("T")
 
-
-class _ExporterManager:
-    _instance: JsonExporter | None = None
-
-    @classmethod
-    def set(cls, exporter: JsonExporter) -> None:
-        cls._instance = exporter
-
-    @classmethod
-    def flush(cls) -> None:
-        if cls._instance is not None:
-            cls._instance.flush()
-
-
-def flush_exported_logs() -> None:
-    """
-    Manually flushes the JSON exporter buffer to disk, if initialized.
-    Always returns None.
-    """
-    _ExporterManager.flush()
 
 
 class TrackQuery(Generic[T]):
@@ -119,10 +100,11 @@ class TrackQuery(Generic[T]):
                 if duration > self.config.slow_log_threshold_ms:
                     logger.log(
                         self.config.slow_log_level,
-                        "%s.%s → Slow execution: took %.2fms",
+                        "Function %s.%s took %.2fms, which is slower than the threshold of %.2fms",
                         class_name or "<module>",
                         func.__name__,
                         duration,
+                        self.config.slow_log_threshold_ms,
                     )
                 else:
                     logger.info(

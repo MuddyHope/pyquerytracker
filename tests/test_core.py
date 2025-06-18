@@ -2,8 +2,6 @@ import time
 import logging
 import pytest
 from pyquerytracker import TrackQuery
-import pytest
-from pyquerytracker import TrackQuery
 
 
 def test_tracking_output():

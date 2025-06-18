@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 from pyquerytracker.config import configure, ExportType
-from pyquerytracker.core import flush_exported_logs
+from pyquerytracker.exporter.utils import flush_exported_logs
 from pyquerytracker import TrackQuery
 import logging
 
