@@ -24,7 +24,21 @@ class JsonExporter:
             self._buffer.append(record)
 
     def flush(self) -> None:
-        if self._enabled and self._buffer:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            with _lock, self._path.open("a", encoding="utf-8") as f:
-                json.dump(self._buffer, f, indent=2)
+        if not self._enabled or not self._buffer:
+            return
+
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+
+        # load existing array (or start fresh)
+        try:
+            with self._path.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = []
+
+        # extend and rewrite
+        data.extend(self._buffer)
+        with _lock, self._path.open("w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        self._buffer.clear()
