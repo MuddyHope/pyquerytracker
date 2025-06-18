@@ -26,5 +26,5 @@ class JsonExporter:
     def flush(self) -> None:
         if self._enabled and self._buffer:
             self._path.parent.mkdir(parents=True, exist_ok=True)
-            with _lock, self._path.open("w", encoding="utf-8") as f:
+            with _lock, self._path.open("a", encoding="utf-8") as f:
                 json.dump(self._buffer, f, indent=2)
