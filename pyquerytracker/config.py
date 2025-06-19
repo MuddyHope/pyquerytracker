@@ -35,6 +35,8 @@ class Config:
     # TODO: Adding export functionality
     slow_log_threshold_ms: float = 100.0
     slow_log_level: int = logging.WARNING
+    export_type: Optional[ExportType] = None
+    export_path: Optional[str] = None
 
 
 _config: Config = Config()
@@ -43,6 +45,8 @@ _config: Config = Config()
 def configure(
     slow_log_threshold_ms: Optional[float] = None,
     slow_log_level: Optional[int] = None,
+    export_type: Optional[ExportType] = None,
+    export_path: Optional[str] = None,
 ):
     """
     Configure global settings for query tracking.
@@ -60,6 +64,10 @@ def configure(
         _config.slow_log_threshold_ms = slow_log_threshold_ms
     if slow_log_level is not None:
         _config.slow_log_level = slow_log_level
+    if export_type is not None:
+        _config.export_type = export_type
+    if export_path is not None:
+        _config.export_path = export_path
 
 
 def get_config() -> Config:
