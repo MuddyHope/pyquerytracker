@@ -1,13 +1,16 @@
 import time
+import atexit
 from functools import update_wrapper
-from typing import Any, Callable, TypeVar, Generic
-from pyquerytracker.config import get_config
-from pyquerytracker.utils.logger import QueryLogger
+from typing import Any, Callable, TypeVar, Generic, Optional
+
+from pyquerytracker.config import get_config, ExportType
+from pyquerytracker.exporter import JsonExporter
 from pyquerytracker.exporter.manager import ExporterManager
 from pyquerytracker.exporter.base import NullExporter
+from pyquerytracker.exporter.utils import _ExporterManager
+from pyquerytracker.utils.logger import QueryLogger
 
 logger = QueryLogger.get_logger()
-
 T = TypeVar("T")
 
 
@@ -21,6 +24,7 @@ class TrackQuery(Generic[T]):
     - Execution time (ms)
     - Arguments
     - Errors (if any)
+    - Export to JSON if configured
 
     Usage:
         @TrackQuery()
@@ -28,28 +32,48 @@ class TrackQuery(Generic[T]):
             ...
     """
 
+    # single shared exporter + last config values
+    _exporter: Any = None
+    _last_export_path: Optional[str] = None
+    _last_export_type: Optional[ExportType] = None
+
     def __init__(self) -> None:
-        self.config = get_config()
-        if self.config.export_type and self.config.export_path:
-            exporter = ExporterManager.create_exporter(self.config)
-            ExporterManager.set(exporter)
-            self.exporter = exporter
-        else:
-            self.exporter = NullExporter()
+        cfg = get_config()
+        need_rebuild = (
+            TrackQuery._exporter is None
+            or cfg.export_path != TrackQuery._last_export_path
+            or cfg.export_type != TrackQuery._last_export_type
+        )
+
+        if need_rebuild:
+            if cfg.export_type == ExportType.JSON and cfg.export_path:
+                exporter = JsonExporter(cfg)
+                atexit.register(exporter.flush)
+            elif cfg.export_type and cfg.export_path:
+                exporter = ExporterManager.create_exporter(cfg)
+            else:
+                exporter = NullExporter()
+
+            _ExporterManager.set(exporter)
+            TrackQuery._exporter = exporter
+            TrackQuery._last_export_path = cfg.export_path
+            TrackQuery._last_export_type = cfg.export_type
+
+        self.config = cfg
+        self._exporter = TrackQuery._exporter
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
-        def wrapped(*args: Any, **kwargs: Any) -> T:
+        def wrapped(*args: Any, **kwargs: Any) -> Optional[T]:
             start = time.perf_counter()
-            class_name = None
-
-            # Try to detect if this is an instance or class method
+            class_name: Optional[str] = None
             if args:
-                possible_self_or_cls = args[0]
-                if hasattr(possible_self_or_cls, "__class__"):
-                    if isinstance(possible_self_or_cls, type):
-                        class_name = possible_self_or_cls.__name__
-                    else:
-                        class_name = possible_self_or_cls.__class__.__name__
+                first = args[0]
+                if hasattr(first, "__class__"):
+                    class_name = (
+                        first.__name__
+                        if isinstance(first, type)
+                        else first.__class__.__name__
+                    )
 
             try:
                 result = func(*args, **kwargs)
@@ -70,10 +94,12 @@ class TrackQuery(Generic[T]):
                 if duration > self.config.slow_log_threshold_ms:
                     logger.log(
                         self.config.slow_log_level,
-                        f"{class_name}.{func.__name__} -> "
-                        f"Slow execution: took {duration:.2f}ms",
+                        "%s.%s took %.2fms (threshold %.2fms)",
+                        class_name or "<module>",
+                        func.__name__,
+                        duration,
+                        self.config.slow_log_threshold_ms,
                     )
-
                 else:
                     logger.info(
                         "Function %s%s executed successfully in %.2fms",
@@ -82,7 +108,8 @@ class TrackQuery(Generic[T]):
                         duration,
                         extra=log_data,
                     )
-                self.exporter.append(log_data)
+
+                self._exporter.append(log_data)
                 return result
 
             except Exception as e:
@@ -102,13 +129,13 @@ class TrackQuery(Generic[T]):
                     f"{class_name}." if class_name else "",
                     func.__name__,
                     duration,
-                    str(e),
+                    e,
                     exc_info=True,
                     extra=log_data,
                 )
-                self.exporter.append(log_data)
-                # Exceptions are handled internally by the decorator,
-                # allowing the program to proceed smoothly
+
+                self._exporter.append(log_data)
+                # swallow the exception and return None
                 return None
 
         return update_wrapper(wrapped, func)
