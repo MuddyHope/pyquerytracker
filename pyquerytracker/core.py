@@ -6,17 +6,12 @@ from typing import Any, Callable, TypeVar, Generic, Optional
 
 from pyquerytracker.config import get_config, ExportType
 from pyquerytracker.exporter import JsonExporter
+from pyquerytracker.exporter.manager import ExporterManager
+from pyquerytracker.exporter.base import NullExporter
 from pyquerytracker.exporter.utils import _ExporterManager
+from pyquerytracker.utils.logger import QueryLogger
 
-# Set up logger (unchanged)
-logger = logging.getLogger("pyquerytracker")
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(fmt)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-
+logger = QueryLogger.get_logger()
 T = TypeVar("T")
 
 
@@ -37,16 +32,13 @@ class TrackQuery(Generic[T]):
         def my_function():
             ...
     """
-
-    # shared exporter and the values that built it
-    _exporter: JsonExporter | None = None
+    # Class-level cache of our exporter and its last config
+    _exporter: Any = None
     _last_export_path: Optional[str] = None
     _last_export_type: Optional[ExportType] = None
 
     def __init__(self) -> None:
         cfg = get_config()
-
-        # detect “first time” OR config’s export settings changed
         need_rebuild = (
             TrackQuery._exporter is None
             or cfg.export_path != TrackQuery._last_export_path
@@ -54,15 +46,21 @@ class TrackQuery(Generic[T]):
         )
 
         if need_rebuild:
-            exporter = JsonExporter(cfg)
-            _ExporterManager.set(exporter)
-            atexit.register(exporter.flush)
+            # JSON exporter if explicitly configured
+            if cfg.export_type == ExportType.JSON and cfg.export_path:
+                exporter = JsonExporter(cfg)
+                atexit.register(exporter.flush)
+            # else create via manager (could be CSV or a NullExporter)
+            elif cfg.export_type and cfg.export_path:
+                exporter = ExporterManager.create_exporter(cfg)
+            else:
+                exporter = NullExporter()
 
+            _ExporterManager.set(exporter)
             TrackQuery._exporter = exporter
             TrackQuery._last_export_path = cfg.export_path
             TrackQuery._last_export_type = cfg.export_type
 
-        # instance fields
         self.config = cfg
         self._exporter = TrackQuery._exporter
 
@@ -71,18 +69,19 @@ class TrackQuery(Generic[T]):
             start = time.perf_counter()
             class_name: Optional[str] = None
 
+            # detect if this was a method on a class
             if args:
                 first = args[0]
                 if hasattr(first, "__class__"):
                     class_name = (
-                        first.__name__
-                        if isinstance(first, type)
+                        first.__name__ if isinstance(first, type)
                         else first.__class__.__name__
                     )
 
             try:
                 result = func(*args, **kwargs)
                 duration = (time.perf_counter() - start) * 1000
+
                 log_data = {
                     "event": (
                         "slow_execution"
@@ -96,10 +95,11 @@ class TrackQuery(Generic[T]):
                     "func_kwargs": repr(kwargs),
                 }
 
+                # log at warning or info
                 if duration > self.config.slow_log_threshold_ms:
                     logger.log(
                         self.config.slow_log_level,
-                        "Function %s.%s took %.2fms, slower than %.2fms",
+                        "%s.%s took %.2fms (threshold %.2fms)",
                         class_name or "<module>",
                         func.__name__,
                         duration,
@@ -107,13 +107,14 @@ class TrackQuery(Generic[T]):
                     )
                 else:
                     logger.info(
-                        "Function %s%s executed successfully in %.2fms",
+                        "Function %s%s executed in %.2fms",
                         f"{class_name}." if class_name else "",
                         func.__name__,
                         duration,
                         extra=log_data,
                     )
 
+                # export the record
                 self._exporter.append(log_data)
                 return result
 
@@ -134,12 +135,13 @@ class TrackQuery(Generic[T]):
                     f"{class_name}." if class_name else "",
                     func.__name__,
                     duration,
-                    str(e),
+                    e,
                     exc_info=True,
                     extra=log_data,
                 )
 
                 self._exporter.append(log_data)
+                # Re-raise so callers can handle the exception
                 raise
 
         return update_wrapper(wrapped, func)

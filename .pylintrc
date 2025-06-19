@@ -9,7 +9,8 @@ disable=
     too-few-public-methods,
     fixme,
     duplicate-code,
-    logging-fstring-interpolation
+    logging-fstring-interpolation,
+    broad-exception-caught
 
 [REPORTS]
 reports=no

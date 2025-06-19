@@ -31,7 +31,7 @@ class Config:
 
     slow_log_threshold_ms: float = 100.0
     slow_log_level: int = logging.WARNING
-    export_type: ExportType = ExportType.JSON
+    export_type: Optional[ExportType] = None
     export_path: Optional[str] = None
 
 
@@ -63,6 +63,10 @@ def configure(
 
     if slow_log_level is not None:
         _config.slow_log_level = slow_log_level
+    if export_type is not None:
+        _config.export_type = export_type
+    if export_path is not None:
+        _config.export_path = export_path
 
     if export_type is not None:
         _config.export_type = export_type
