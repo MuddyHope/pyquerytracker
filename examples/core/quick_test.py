@@ -1,5 +1,6 @@
-from pyquerytracker import TrackQuery
 import time
+
+from pyquerytracker import TrackQuery
 
 
 @TrackQuery()

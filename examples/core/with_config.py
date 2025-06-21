@@ -1,7 +1,8 @@
+import logging
+import time
+
 from pyquerytracker import TrackQuery
 from pyquerytracker.config import configure
-import time
-import logging
 
 configure(slow_log_threshold_ms=500, slow_log_level=logging.ERROR)
 

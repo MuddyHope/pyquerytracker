@@ -1,7 +1,16 @@
+<<<<<<< Updated upstream
 import pytest
 from pyquerytracker.core import TrackQuery
 import time
 import asyncio
+=======
+import logging
+import time
+
+import pytest
+
+from pyquerytracker import TrackQuery
+>>>>>>> Stashed changes
 
 
 def test_tracking_output():
