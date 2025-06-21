@@ -1,46 +1,23 @@
 import asyncio
 import logging
-<<<<<<< Updated upstream
-import inspect
-=======
 import time
->>>>>>> Stashed changes
 from functools import update_wrapper
 from typing import Any, Callable, Generic, TypeVar
 
 from pyquerytracker.config import get_config
+from pyquerytracker.exporter.base import NullExporter
+from pyquerytracker.exporter.manager import ExporterManager
+from pyquerytracker.utils.logger import QueryLogger
 
-logger = logging.getLogger("pyquerytracker")
-logger.setLevel(logging.DEBUG)
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-logger.propagate = True
+logger = QueryLogger.get_logger()
 
 T = TypeVar("T")
 
 
 class TrackQuery(Generic[T]):
     """
-    A decorator to track execution time of synchronous and asynchronous functions.
+    Class-based decorator to track and log the execution time of functions or methods.
 
-<<<<<<< Updated upstream
-    Example usage:
-
-    >>> @TrackQuery()
-    ... def db_query():
-    ...     time.sleep(0.1)
-    ...     return "result"
-
-    >>> @TrackQuery()
-    ... async def async_query():
-    ...     await asyncio.sleep(0.2)
-    ...     return "result"
-=======
     Works with both synchronous and asynchronous functions.
 
     Logs include:
@@ -58,26 +35,18 @@ class TrackQuery(Generic[T]):
         @TrackQuery()
         async def my_async_function():
             ...
->>>>>>> Stashed changes
     """
+
     def __init__(self) -> None:
         self.config = get_config()
+        if self.config.export_type and self.config.export_path:
+            exporter = ExporterManager.create_exporter(self.config)
+            ExporterManager.set(exporter)
+            self.exporter = exporter
+        else:
+            self.exporter = NullExporter()
 
     def __call__(self, func: Callable[..., T]) -> Callable[..., T]:
-<<<<<<< Updated upstream
-        if inspect.iscoroutinefunction(func):
-            async def async_wrapped(*args: Any, **kwargs: Any) -> T:
-                return await self._execute(func, args, kwargs, is_async=True)
-            return update_wrapper(async_wrapped, func)
-        else:
-            def sync_wrapped(*args: Any, **kwargs: Any) -> T:
-                return self._execute_sync(func, args, kwargs)
-            return update_wrapper(sync_wrapped, func)
-
-    def _execute_sync(self, func: Callable[..., T], args: Any, kwargs: Any) -> T:
-        import asyncio
-        return asyncio.run(self._execute(func, args, kwargs, is_async=False))
-=======
         if asyncio.iscoroutinefunction(func):
 
             async def async_wrapped(*args: Any, **kwargs: Any) -> T:
@@ -95,32 +64,47 @@ class TrackQuery(Generic[T]):
                 try:
                     result = await func(*args, **kwargs)
                     duration = (time.perf_counter() - start) * 1000
+                    log_data = {
+                        "event": (
+                            "slow_execution"
+                            if duration > self.config.slow_log_threshold_ms
+                            else "normal_execution"
+                        ),
+                        "function_name": func.__name__,
+                        "class_name": class_name,
+                        "duration_ms": duration,
+                        "func_args": repr(args),
+                        "func_kwargs": repr(kwargs),
+                    }
+
                     if duration > self.config.slow_log_threshold_ms:
-                        # FIX (line-too-long): Shortened the log message text
-                        log_msg = f"Slow: {class_name}.{func.__name__} took %.2fms"
                         logger.log(
                             self.config.slow_log_level,
-                            log_msg,
-                            duration,
+                            f"{class_name}.{func.__name__} -> "
+                            f"Slow execution: took {duration:.2f}ms",
                         )
-
                     else:
                         logger.info(
                             "Function %s%s executed successfully in %.2fms",
                             f"{class_name}." if class_name else "",
                             func.__name__,
                             duration,
-                            extra={
-                                "function_name": func.__name__,
-                                "class_name": class_name,
-                                "duration_ms": duration,
-                                "func_args": args,
-                                "func_kwargs": kwargs,
-                            },
+                            extra=log_data,
                         )
+                    self.exporter.append(log_data)
                     return result
                 except Exception as e:
                     duration = (time.perf_counter() - start) * 1000
+                    log_data = {
+                        "event": "error",
+                        "function_name": func.__name__,
+                        "class_name": class_name,
+                        "duration_ms": duration,
+                        "func_args": repr(args),
+                        "func_kwargs": repr(kwargs),
+                        "error": str(e),
+                    }
+
                     logger.error(
                         "Function %s%s failed after %.2fms: %s",
                         f"{class_name}." if class_name else "",
@@ -128,16 +112,10 @@ class TrackQuery(Generic[T]):
                         duration,
                         str(e),
                         exc_info=True,
-                        extra={
-                            "function_name": func.__name__,
-                            "class_name": class_name,
-                            "duration_ms": duration,
-                            "func_args": args,
-                            "func_kwargs": kwargs,
-                            "error": str(e),
-                        },
+                        extra=log_data,
                     )
-                    raise
+                    self.exporter.append(log_.data)
+                    return None  # Adopt new error handling from main
 
             return update_wrapper(async_wrapped, func)
 
@@ -152,76 +130,62 @@ class TrackQuery(Generic[T]):
                         class_name = possible_self_or_cls.__name__
                     else:
                         class_name = possible_self_or_cls.__class__.__name__
->>>>>>> Stashed changes
 
-    async def _execute(self, func, args, kwargs, is_async=False):
-        start = time.perf_counter()
-        class_name = None
-
-        if args:
-            obj = args[0]
-            if hasattr(obj, "__class__"):
-                class_name = obj.__class__.__name__ if not isinstance(obj, type) else obj.__name__
-
-        try:
-            if is_async:
-                result = await func(*args, **kwargs)
-            else:
+            try:
                 result = func(*args, **kwargs)
-<<<<<<< Updated upstream
-=======
                 duration = (time.perf_counter() - start) * 1000
-                if duration > self.config.slow_log_threshold_ms:
-                    # FIX (line-too-long): Shortened the log message text
-                    log_msg = f"Slow: {class_name}.{func.__name__} took %.2fms"
-                    logger.log(
-                        self.config.slow_log_level,
-                        log_msg,
-                        duration,
-                    )
->>>>>>> Stashed changes
-
-            duration = (time.perf_counter() - start) * 1000
-            if duration > self.config.slow_log_threshold_ms:
-                logger.log(
-                    self.config.slow_log_level,
-                    f"{class_name + '.' if class_name else ''}{func.__name__} -> Slow execution: took %.2fms",
-                    duration,
-                )
-            else:
-                logger.log(
-                    self.config.slow_log_level,
-                    "Function %s%s executed successfully in %.2fms",
-                    f"{class_name + '.' if class_name else ''}",
-                    func.__name__,
-                    duration,
-                    extra={
-                        "function_name": func.__name__,
-                        "class_name": class_name,
-                        "duration_ms": duration,
-                        "func_args": args,
-                        "func_kwargs": kwargs,
-                    },
-                )
-
-            return result
-
-        except Exception as e:
-            duration = (time.perf_counter() - start) * 1000
-            logger.error(
-                "Function %s%s failed after %.2fms: %s",
-                f"{class_name + '.' if class_name else ''}",
-                func.__name__,
-                duration,
-                str(e),
-                exc_info=True,
-                extra={
+                log_data = {
+                    "event": (
+                        "slow_execution"
+                        if duration > self.config.slow_log_threshold_ms
+                        else "normal_execution"
+                    ),
                     "function_name": func.__name__,
                     "class_name": class_name,
                     "duration_ms": duration,
-                    "func_args": args,
-                    "func_kwargs": kwargs,
+                    "func_args": repr(args),
+                    "func_kwargs": repr(kwargs),
+                }
+
+                if duration > self.config.slow_log_threshold_ms:
+                    logger.log(
+                        self.config.slow_log_level,
+                        f"{class_name}.{func.__name__} -> "
+                        f"Slow execution: took {duration:.2f}ms",
+                    )
+                else:
+                    logger.info(
+                        "Function %s%s executed successfully in %.2fms",
+                        f"{class_name}." if class_name else "",
+                        func.__name__,
+                        duration,
+                        extra=log_data,
+                    )
+                self.exporter.append(log_data)
+                return result
+
+            except Exception as e:
+                duration = (time.perf_counter() - start) * 1000
+                log_data = {
+                    "event": "error",
+                    "function_name": func.__name__,
+                    "class_name": class_name,
+                    "duration_ms": duration,
+                    "func_args": repr(args),
+                    "func_kwargs": repr(kwargs),
                     "error": str(e),
-                },
-            )
-            raise
+                }
+
+                logger.error(
+                    "Function %s%s failed after %.2fms: %s",
+                    f"{class_name}." if class_name else "",
+                    func.__name__,
+                    duration,
+                    str(e),
+                    exc_info=True,
+                    extra=log_data,
+                )
+                self.exporter.append(log_data)
+                return None # Adopt new error handling from main
+
+        return update_wrapper(wrapped, func)
