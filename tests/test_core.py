@@ -1,6 +1,5 @@
 import time
 import logging
-import pytest
 from pyquerytracker import TrackQuery
 
 
@@ -55,6 +54,8 @@ def test_tracking_output_with_error(caplog):
 
 
 def test_tracking_with_class(caplog):
+    caplog.set_level("INFO")
+
     class MyClass:
         @TrackQuery()
         def do_work(self, a, b):

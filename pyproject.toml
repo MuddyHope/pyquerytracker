@@ -25,3 +25,10 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/MuddyHope/pyquerytracker"
 Issues = "https://github.com/MuddyHope/pyquerytracker/issues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]

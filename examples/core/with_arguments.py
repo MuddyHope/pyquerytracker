@@ -1,4 +1,5 @@
 import logging
+
 from pyquerytracker import TrackQuery
 
 # Configure logging
