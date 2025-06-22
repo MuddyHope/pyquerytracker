@@ -34,8 +34,8 @@ async def test_async_tracking_output_with_error(caplog):
         await asyncio.sleep(0.01)
         raise ValueError("Async Test error")
 
-    with pytest.raises(ValueError):
-        await failing_async_query()
+    result = await failing_async_query()
+    assert result is None
 
     # Check the log records
     assert len(caplog.records) == 1
@@ -66,21 +66,23 @@ async def test_async_tracking_with_class(caplog):
 
 
 async def test_async_configure_slow_log(caplog):
-    configure(slow_log_threshold_ms=50, slow_log_level=logging.ERROR)
+    try:
+        configure(slow_log_threshold_ms=50, slow_log_level=logging.ERROR)
 
-    @TrackQuery()
-    async def do_slow_async_work():
-        await asyncio.sleep(0.1)
-        return "slow"
+        @TrackQuery()
+        async def do_slow_async_work():
+            await asyncio.sleep(0.1)
+            return "slow"
 
-    result = await do_slow_async_work()
-    assert result == "slow"
-    assert len(caplog.records) == 1
-    record = caplog.records[0]
-    assert record.levelname == "ERROR"  # Configured to ERROR for slow logs
-    assert "do_slow_async_work" in record.message
-    assert "Slow:" in record.message
-    assert "ms" in record.message
+        result = await do_slow_async_work()
+        assert result == "slow"
+        assert len(caplog.records) == 1
+        record = caplog.records[0]
+        assert record.levelname == "ERROR"  # Configured to ERROR for slow logs
+        assert "do_slow_async_work" in record.message
+        assert "Slow execution" in record.message
+        assert "ms" in record.message
 
-    # Reset config to avoid affecting other tests
-    configure(slow_log_threshold_ms=100.0, slow_log_level=logging.WARNING)
+    finally:
+        # Reset config to avoid affecting other tests
+        configure(slow_log_threshold_ms=100.0, slow_log_level=logging.WARNING)

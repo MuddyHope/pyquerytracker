@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import time
 from functools import update_wrapper
 from typing import Any, Callable, Generic, TypeVar
@@ -114,8 +113,8 @@ class TrackQuery(Generic[T]):
                         exc_info=True,
                         extra=log_data,
                     )
-                    self.exporter.append(log_.data)
-                    return None  # Adopt new error handling from main
+                    self.exporter.append(log_data)
+                    return None
 
             return update_wrapper(async_wrapped, func)
 
@@ -186,6 +185,6 @@ class TrackQuery(Generic[T]):
                     extra=log_data,
                 )
                 self.exporter.append(log_data)
-                return None # Adopt new error handling from main
+                return None
 
         return update_wrapper(wrapped, func)
