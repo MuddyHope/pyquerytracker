@@ -1,5 +1,6 @@
 import asyncio
 import logging
+
 from pyquerytracker import TrackQuery, configure
 
 # Configure logging to see the output
