@@ -3,8 +3,8 @@ import csv
 import os
 from threading import Lock
 
-from pyquerytracker.utils.logger import QueryLogger
 from pyquerytracker.exporter.base import Exporter
+from pyquerytracker.utils.logger import QueryLogger
 
 logger = QueryLogger.get_logger()
 

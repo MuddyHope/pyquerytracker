@@ -1,5 +1,6 @@
 import logging
 import time
+
 from pyquerytracker.core import TrackQuery, logger
 
 
@@ -28,6 +29,7 @@ def test_configure_basic_with_loglevel(caplog):
     class MyClass:
         def do_slow_work(self, a, b):
             import time
+
             time.sleep(0.2)
             return a * b
 

@@ -4,19 +4,19 @@ import time
 from pyquerytracker import TrackQuery
 from pyquerytracker.config import ExportType, configure
 
-os.makedirs("logs-csv", exist_ok=True)
+os.makedirs("logs-json", exist_ok=True)
 
 configure(
     slow_log_threshold_ms=50.0,
     slow_log_level=20,  # INFO
-    export_type=ExportType.CSV,
-    export_path="logs-csv/query_logs_2.csv",
+    export_type=ExportType.JSON,
+    export_path="logs-json/query_logs.json",
 )
 
 
 @TrackQuery()
 def process_data(x, y):
-    time.sleep(8)
+    time.sleep(0.08)  # triggers slow log
     return x + y
 
 

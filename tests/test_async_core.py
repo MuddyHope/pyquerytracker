@@ -1,6 +1,8 @@
 import asyncio
 import logging
+
 import pytest
+
 from pyquerytracker import TrackQuery, configure
 
 # Mark all tests in this file as asyncio

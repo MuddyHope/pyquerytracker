@@ -1,8 +1,10 @@
 import asyncio
-import sys
 import os
+import sys
+
 from pyquerytracker import TrackQuery
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 # Example 1: Basic async function
