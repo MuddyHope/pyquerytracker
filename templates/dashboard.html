@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Query Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+        h2 {
+            margin-bottom: 1rem;
+        }
+        #chart-container {
+            max-width: 900px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>Query Execution Time</h2>
+
+    <label for="timeWindow">Time Window:</label>
+    <select id="timeWindow" onchange="loadChart()">
+        <option value="5">Last 5 min</option>
+        <option value="30">Last 30 min</option>
+        <option value="60">Last 1 hour</option>
+    </select>
+
+    <div id="chart-container">
+        <canvas id="queryChart"></canvas>
+    </div>
+
+    <script>
+        let chartInstance = null;
+
+        async function loadChart() {
+            const minutes = document.getElementById("timeWindow").value;
+            try {
+                const res = await fetch(`/api/query-stats?minutes=${minutes}`);
+                const data = await res.json();
+                console.log("Fetched data:", data);
+
+                const ctx = document.getElementById('queryChart').getContext('2d');
+
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Execution Time (ms)',
+                            data: data.durations,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Endpoint Query Durations'
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Chart load failed:", err);
+            }
+        }
+
+        window.onload = loadChart;
+    </script>
+</body>
+</html>
