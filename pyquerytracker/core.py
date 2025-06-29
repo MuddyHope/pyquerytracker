@@ -10,8 +10,6 @@ from pyquerytracker.utils.logger import QueryLogger
 from pyquerytracker.tracker import store_tracked_query
 from pyquerytracker.db.writer import DBWriter
 
-
-
 logger = QueryLogger.get_logger()
 
 T = TypeVar("T")

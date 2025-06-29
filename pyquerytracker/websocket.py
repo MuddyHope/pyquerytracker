@@ -3,6 +3,7 @@ from typing import List
 
 connected_clients: List[WebSocket] = []
 
+
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     connected_clients.append(websocket)
@@ -13,6 +14,7 @@ async def websocket_endpoint(websocket: WebSocket):
     finally:
         connected_clients.remove(websocket)
 
+
 async def broadcast(message: str):
     disconnected = []
     for client in connected_clients:
@@ -22,4 +24,3 @@ async def broadcast(message: str):
             disconnected.append(client)
     for client in disconnected:
         connected_clients.remove(client)
-

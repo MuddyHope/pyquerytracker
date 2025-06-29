@@ -4,6 +4,7 @@ from datetime import datetime
 
 Base = declarative_base()
 
+
 class TrackedQuery(Base):
     __tablename__ = "tracked_queries"
 

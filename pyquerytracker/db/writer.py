@@ -2,6 +2,7 @@ from pyquerytracker.db.session import SessionLocal
 from pyquerytracker.db.models import TrackedQuery
 from sqlalchemy.exc import SQLAlchemyError
 
+
 class DBWriter:
     @staticmethod
     def save(log_data: dict):
