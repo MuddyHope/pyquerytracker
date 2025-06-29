@@ -1,5 +1,6 @@
-from fastapi import WebSocket, WebSocketDisconnect
 from typing import List
+
+from fastapi import WebSocket, WebSocketDisconnect
 
 connected_clients: List[WebSocket] = []
 

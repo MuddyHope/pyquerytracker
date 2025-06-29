@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Request, Query
+from collections import defaultdict
+
+from fastapi import FastAPI, Request, Query, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from collections import defaultdict
+
 from pyquerytracker.tracker import get_tracked_queries  # ✅ real-time logs
 from pyquerytracker.config import get_config
 from pyquerytracker.websocket import websocket_endpoint
-from fastapi import WebSocket
 
 app = FastAPI(title="Query Tracker API")
 
@@ -13,6 +14,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 if get_config().dashboard_enabled:
+
     @app.get("/dashboard", response_class=HTMLResponse)
     def dashboard(request: Request):
         return templates.TemplateResponse("dashboard.html", {"request": request})
@@ -36,11 +38,12 @@ def get_query_stats(minutes: int = Query(5, ge=1, le=1440)):
         "labels": all_endpoints,
         "durations": [
             round(
-                sum(durations_by_endpoint.get(ep, [])) / max(1, len(durations_by_endpoint.get(ep, []))),
-                2
+                sum(durations_by_endpoint.get(ep, []))
+                / max(1, len(durations_by_endpoint.get(ep, []))),
+                2,
             )
             for ep in all_endpoints
-        ]
+        ],
     }
 
 
