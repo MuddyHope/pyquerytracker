@@ -2,90 +2,514 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Query Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             padding: 2rem;
-            background-color: #f9fafb;
-            color: #111827;
+            background: linear-gradient(135deg, #f0f4ff 0%, #fafcff 100%);
+            min-height: 100vh;
+            color: #1f2937;
         }
-        h2 {
-            margin-bottom: 1rem;
-        }
-        #chart-container {
+
+
+
+        .dashboard-container {
             max-width: 900px;
-            margin: auto;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        select:hover {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f3f4f6, #ffffff);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            min-height: 500px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1rem;
+            border: 1px solid #fecaca;
+        }
+
+        .success-indicator {
+            color: #059669;
+        }
+
+        .warning-indicator {
+            color: #d97706;
+        }
+
+        .error-indicator {
+            color: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .dashboard-container {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>Query Execution Time</h2>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Query Dashboard</h1>
+            <p>Real-time monitoring of query execution performance</p>
+        </div>
 
-    <label for="timeWindow">Time Window:</label>
-    <select id="timeWindow" onchange="loadChart()">
-        <option value="5">Last 5 min</option>
-        <option value="30">Last 30 min</option>
-        <option value="60">Last 1 hour</option>
-    </select>
+        <div class="controls">
+            <div class="control-group">
+                <label for="timeWindow">Time Window:</label>
+                <select id="timeWindow" onchange="loadChart()">
+                    <option value="5">Last 5 minutes</option>
+                    <option value="30">Last 30 minutes</option>
+                    <option value="60">Last 1 hour</option>
+                    <option value="360">Last 6 hours</option>
+                    <option value="1440">Last 24 hours</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="refreshInterval">Auto Refresh:</label>
+                <select id="refreshInterval" onchange="setRefreshInterval()">
+                    <option value="0">Manual</option>
+                    <option value="30">30 seconds</option>
+                    <option value="60" selected>1 minute</option>
+                    <option value="300">5 minutes</option>
+                </select>
+            </div>
+        </div>
 
-    <div id="chart-container">
-        <canvas id="queryChart"></canvas>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalQueries">0</div>
+                <div class="stat-label">Total Queries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgDuration">0ms</div>
+                <div class="stat-label">Avg Duration</div>
+            <!-- </div>
+            <div class="stat-card">
+                <div class="stat-value success-indicator" id="successRate">100%</div>
+                <div class="stat-label">Success Rate</div> -->
+            </div>
+            <div class="stat-card">
+                <div class="stat-value error-indicator" id="errorCount">0</div>
+                <div class="stat-label">Errors</div>
+            </div>
+        </div>
+
+        <div id="errorContainer"></div>
+
+        <div class="chart-container">
+            <canvas id="queryChart" style="display: none;"></canvas>
+        </div>
     </div>
 
     <script>
-        let chartInstance = null;
+        class QueryDashboard {
+            constructor() {
+                this.chartInstance = null;
+                this.refreshInterval = null;
+                this.currentTimeWindow = 5;
+                this.isLoading = false;
+                
+                this.initializeChart();
+                this.setRefreshInterval();
+            }
 
-        async function loadChart() {
-            const minutes = document.getElementById("timeWindow").value;
-            try {
-                const res = await fetch(`/api/query-stats?minutes=${minutes}`);
-                const data = await res.json();
-                console.log("Fetched data:", data);
+            async loadChart() {
+                if (this.isLoading) return;
+                this.isLoading = true;
+                
+                const minutes = document.getElementById("timeWindow").value;
+                this.currentTimeWindow = minutes;
+                
+                this.clearError();
 
+                try {
+                    const response = await fetch(`/api/query-stats?minutes=${minutes}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log("Fetched data:", data);
+                    
+                    this.updateChart(data);
+                    this.updateStats(data);
+                    
+                } catch (error) {
+                    console.error("Chart load failed:", error);
+                    this.showError("No data available for the selected time window.");
+                    this.showEmptyState();
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+
+            updateChart(data) {
                 const ctx = document.getElementById('queryChart').getContext('2d');
-
-                if (chartInstance) {
-                    chartInstance.destroy();
+                
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
                 }
 
-                chartInstance = new Chart(ctx, {
+                const hasData = data && Array.isArray(data.labels) && data.labels.length > 0;
+                const safeData = hasData ? data : { labels: [], durations: [], events: [] };
+                const chartData = this.prepareChartData(safeData, hasData);
+
+                this.chartInstance = new Chart(ctx, {
                     type: 'bar',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: 'Execution Time (ms)',
-                            data: data.durations,
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderColor: 'rgba(37, 99, 235, 1)',
-                            borderWidth: 1
-                        }]
-                    },
+                    data: chartData,
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
                         scales: {
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Execution Time (ms)',
+                                    font: { weight: 'bold' }
+                                },
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time',
+                                    font: { weight: 'bold' }
+                                },
+                                grid: { display: false }
                             }
                         },
                         plugins: {
                             legend: {
-                                position: 'top'
+                                position: 'top',
+                                labels: { usePointStyle: true, font: { weight: 'bold' } }
                             },
                             title: {
                                 display: true,
-                                text: 'Endpoint Query Durations'
+                                text: hasData ? 'Query Execution Times' : '"No Data Available"',
+                                font: { size: 16, weight: 'bold' },
+                                color: hasData ? '#1f2937' : '#6b7280'
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        if (!hasData) return 'No queries executed';
+                                        const event = safeData.events[context.dataIndex];
+                                        const duration = context.parsed.y;
+                                        return `Duration: ${duration}ms (${event})`;
+                                    }
+                                }
                             }
-                        }
+                        },
+                        animation: { duration: hasData ? 1000 : 0 }
                     }
                 });
-            } catch (err) {
-                console.error("Chart load failed:", err);
+
+                document.getElementById('queryChart').style.display = 'block';
+            }
+
+
+            prepareChartData(data, hasData) {
+                if (hasData) {
+                    return {
+                        labels: data.labels.map(label => new Date(label).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })),
+                        datasets: [{
+                            label: 'Execution Time (ms)',
+                            data: data.durations,
+                            backgroundColor: 'rgba(99, 102, 241, 0.3)',
+                            borderColor: 'rgba(99, 102, 241, 0.5)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }]
+                    };
+                } else {
+                    const now = new Date();
+                    const emptyLabels = Array.from({ length: 10 }, (_, i) => {
+                        const time = new Date(now.getTime() - (9 - i) * 60000);
+                        return time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    });
+
+                    return {
+                        labels: emptyLabels,
+                        datasets: [{
+                            label: 'Execution Time (ms)',
+                            data: Array(10).fill(0),
+                            backgroundColor: 'rgba(99, 102, 241, 0.3)',
+                            borderColor: 'rgba(99, 102, 241, 0.5)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }]
+                    };
+                }
+            }
+
+
+            getEventColor(event) {
+                const colors = {
+                    'error': 'rgba(239, 68, 68, 0.8)',
+                    'slow_execution': 'rgba(251, 191, 36, 0.8)',
+                    // 'success': 'rgba(34, 197, 94, 0.8)'
+                };
+                return colors[event] || colors['success'];
+            }
+
+            updateStats(data) {
+                const hasData = data && data.durations && data.durations.length > 0;
+                
+                if (hasData) {
+                    const totalQueries = data.durations.length;
+                    const avgDuration = Math.round(data.durations.reduce((a, b) => a + b, 0) / totalQueries);
+                    const errorCount = data.events.filter(e => e === 'error').length;
+                    // const successRate = Math.round(((totalQueries - errorCount) / totalQueries) * 100);
+
+                    document.getElementById('totalQueries').textContent = totalQueries;
+                    document.getElementById('avgDuration').textContent = `${avgDuration}ms`;
+                    document.getElementById('successRate').textContent = `${successRate}%`;
+                    document.getElementById('errorCount').textContent = errorCount;
+
+                    // Update success rate color
+                    const successElement = document.getElementById('successRate');
+                    successElement.className = successRate >= 95 ? 'stat-value success-indicator' : 
+                                             successRate >= 80 ? 'stat-value warning-indicator' : 
+                                             'stat-value error-indicator';
+                } else {
+                    // Show zero state
+                    document.getElementById('totalQueries').textContent = '0';
+                    document.getElementById('avgDuration').textContent = '0ms';
+                    document.getElementById('successRate').textContent = '100%';
+                    document.getElementById('errorCount').textContent = '0';
+                    
+                    document.getElementById('successRate').className = 'stat-value success-indicator';
+                }
+            }
+
+            showEmptyState() {
+                this.updateChart({});
+                this.updateStats({});
+            }
+
+
+            initializeChart() {
+                // Initialize with empty state immediately
+                this.showEmptyState();
+                // Then try to load real data
+                this.loadChart();
+            }
+
+            showLoading(show) {
+                const loading = document.getElementById('loadingIndicator');
+                loading.style.display = show ? 'block' : 'none';
+            }
+
+            showError(message) {
+                const container = document.getElementById('errorContainer');
+                container.innerHTML = `<div class="error-message">${message}</div>`;
+            }
+
+            clearError() {
+                document.getElementById('errorContainer').innerHTML = '';
+            }
+
+            setRefreshInterval() {
+                const interval = parseInt(document.getElementById('refreshInterval').value);
+                
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                    this.refreshInterval = null;
+                }
+
+                if (interval > 0) {
+                    this.refreshInterval = setInterval(() => {
+                        this.loadChart();
+                    }, interval * 1000);
+                }
             }
         }
 
-        window.onload = loadChart;
+        // Global functions for event handlers
+        let dashboard;
+
+        function loadChart() {
+            if (dashboard) {
+                dashboard.loadChart();
+            }
+        }
+
+        function setRefreshInterval() {
+            if (dashboard) {
+                dashboard.setRefreshInterval();
+            }
+        }
+
+        // Initialize dashboard when page loads
+        window.addEventListener('load', () => {
+            dashboard = new QueryDashboard();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (dashboard && dashboard.refreshInterval) {
+                clearInterval(dashboard.refreshInterval);
+            }
+        });
     </script>
 </body>
 </html>

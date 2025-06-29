@@ -18,7 +18,7 @@ async def broadcast(message: str):
     for client in connected_clients:
         try:
             await client.send_text(message)
-        except:
+        except Exception:
             disconnected.append(client)
     for client in disconnected:
         connected_clients.remove(client)

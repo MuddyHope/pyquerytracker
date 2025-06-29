@@ -46,7 +46,7 @@ def test_connection_lifecycle():
     connected_clients.clear()
     try:
         asyncio.run(websocket_endpoint(ws))
-    except:
+    except Exception:
         pass
     assert ws not in connected_clients
 
