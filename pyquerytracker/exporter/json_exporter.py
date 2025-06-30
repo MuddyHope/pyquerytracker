@@ -41,7 +41,7 @@ class JsonExporter(Exporter):
             existing_data.extend(self._buffer)
 
             with open(self.config.export_path, "w", encoding="utf-8") as f:
-                json.dump(existing_data, f, indent=2)
+                json.dump(existing_data, f, indent=2, default=str)
 
             logger.info(f"Flushed {len(self._buffer)} logs to JSON")
             self._buffer.clear()

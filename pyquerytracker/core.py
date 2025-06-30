@@ -7,6 +7,8 @@ from pyquerytracker.config import get_config
 from pyquerytracker.exporter.base import NullExporter
 from pyquerytracker.exporter.manager import ExporterManager
 from pyquerytracker.utils.logger import QueryLogger
+from pyquerytracker.tracker import store_tracked_query
+from pyquerytracker.db.writer import DBWriter
 
 logger = QueryLogger.get_logger()
 
@@ -91,6 +93,9 @@ class TrackQuery(Generic[T]):
                             extra=log_data,
                         )
                     self.exporter.append(log_data)
+                    if self.config.persist_to_db:
+                        DBWriter.save(log_data)
+                    store_tracked_query(log_data)
                     return result
                 except Exception as e:
                     duration = (time.perf_counter() - start) * 1000
@@ -114,6 +119,9 @@ class TrackQuery(Generic[T]):
                         extra=log_data,
                     )
                     self.exporter.append(log_data)
+                    if self.config.persist_to_db:
+                        DBWriter.save(log_data)
+                    store_tracked_query(log_data)
                     return None
 
             return update_wrapper(async_wrapped, func)
@@ -161,6 +169,9 @@ class TrackQuery(Generic[T]):
                         extra=log_data,
                     )
                 self.exporter.append(log_data)
+                if self.config.persist_to_db:
+                    DBWriter.save(log_data)
+                store_tracked_query(log_data)
                 return result
 
             except Exception as e:
@@ -185,6 +196,9 @@ class TrackQuery(Generic[T]):
                     extra=log_data,
                 )
                 self.exporter.append(log_data)
+                if self.config.persist_to_db:
+                    DBWriter.save(log_data)
+                store_tracked_query(log_data)
                 return None
 
         return update_wrapper(wrapped, func)
