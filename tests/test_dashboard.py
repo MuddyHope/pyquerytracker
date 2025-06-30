@@ -1,13 +1,16 @@
 from fastapi.testclient import TestClient
+
 from pyquerytracker.api import app
 from pyquerytracker.core import TrackQuery
 
 client = TestClient(app)
 
+
 # Simulate query activity
 @TrackQuery()
 def sample_query():
     return "ok"
+
 
 def test_query_stats_endpoint():
     # Trigger a few logs

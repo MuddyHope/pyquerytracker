@@ -1,11 +1,11 @@
 from collections import defaultdict
 
-from fastapi import FastAPI, Request, Query, WebSocket
+from fastapi import FastAPI, Query, Request, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from pyquerytracker.tracker import get_tracked_queries  # ✅ real-time logs
 from pyquerytracker.config import get_config
+from pyquerytracker.tracker import get_tracked_queries  # ✅ real-time logs
 from pyquerytracker.websocket import websocket_endpoint
 
 app = FastAPI(title="Query Tracker API")

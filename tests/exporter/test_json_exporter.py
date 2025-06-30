@@ -8,9 +8,11 @@ def run_test_in_subprocess(script: str, export_path: str):
     print("\n----- Running Script -----\n")
     print(script)
     print("\n--------------------------\n")
-    
+
     try:
-        subprocess.run(["python3", "-c", script], check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["python3", "-c", script], check=True, capture_output=True, text=True
+        )
     except subprocess.CalledProcessError as e:
         print("STDOUT:\n", e.stdout)
         print("STDERR:\n", e.stderr)
@@ -80,7 +82,7 @@ try:
     bar()
 except RuntimeError:
     pass
-    
+
 from pyquerytracker.exporter.manager import ExporterManager
 ExporterManager.get().flush()
 

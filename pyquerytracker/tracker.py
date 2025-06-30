@@ -1,5 +1,5 @@
-from datetime import datetime, timezone, timedelta
-from typing import List, Dict, Any
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List
 
 # In-memory store to collect tracked query data
 query_data_store: List[Dict[str, Any]] = []
