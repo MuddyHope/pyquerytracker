@@ -100,8 +100,10 @@ asyncio.run(fetch_data())
 To view tracked query logs via REST, WebSocket, or a Web-based dashboard, start the built-in FastAPI server:
 
 ```bash
-uvicorn pyquerytracker.server:app --reload
+uvicorn pyquerytracker.api:app --reload
 ```
+
+- ⚠️ If your project or file structure is different, replace `pyquerytracker.api` with your own module path, like `<your_project_name>.<your_server(file)_name>`.
 
 - Open docs at [http://localhost:8000/docs](http://localhost:8000/docs)
 - **Query Dashboard UI:** [http://localhost:8000/dashboard](http://localhost:8000/dashboard)

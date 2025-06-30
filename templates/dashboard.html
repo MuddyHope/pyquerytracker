@@ -418,28 +418,19 @@
                     const totalQueries = data.durations.length;
                     const avgDuration = Math.round(data.durations.reduce((a, b) => a + b, 0) / totalQueries);
                     const errorCount = data.events.filter(e => e === 'error').length;
-                    // const successRate = Math.round(((totalQueries - errorCount) / totalQueries) * 100);
 
                     document.getElementById('totalQueries').textContent = totalQueries;
                     document.getElementById('avgDuration').textContent = `${avgDuration}ms`;
-                    document.getElementById('successRate').textContent = `${successRate}%`;
                     document.getElementById('errorCount').textContent = errorCount;
-
-                    // Update success rate color
-                    const successElement = document.getElementById('successRate');
-                    successElement.className = successRate >= 95 ? 'stat-value success-indicator' : 
-                                             successRate >= 80 ? 'stat-value warning-indicator' : 
-                                             'stat-value error-indicator';
+                    
                 } else {
                     // Show zero state
                     document.getElementById('totalQueries').textContent = '0';
                     document.getElementById('avgDuration').textContent = '0ms';
-                    document.getElementById('successRate').textContent = '100%';
                     document.getElementById('errorCount').textContent = '0';
-                    
-                    document.getElementById('successRate').className = 'stat-value success-indicator';
                 }
             }
+
 
             showEmptyState() {
                 this.updateChart({});

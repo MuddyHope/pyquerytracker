@@ -1,11 +1,12 @@
-from collections import defaultdict
+from datetime import datetime, timedelta
 
 from fastapi import FastAPI, Query, Request, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from pyquerytracker.config import get_config
-from pyquerytracker.tracker import get_tracked_queries  # ✅ real-time logs
+from pyquerytracker.db.models import TrackedQuery
+from pyquerytracker.db.session import SessionLocal
 from pyquerytracker.websocket import websocket_endpoint
 
 app = FastAPI(title="Query Tracker API")
@@ -22,29 +23,47 @@ if get_config().dashboard_enabled:
 
 @app.get("/api/query-stats")
 def get_query_stats(minutes: int = Query(5, ge=1, le=1440)):
-    logs = get_tracked_queries(minutes)
+    cutoff = datetime.utcnow() - timedelta(minutes=minutes)
+    print(f"[DEBUG] Cutoff: {cutoff}")
 
-    # You can change this list to match real endpoints you're tracking
-    all_endpoints = ["GET /users", "POST /items", "GET /items", "DELETE /items"]
-    durations_by_endpoint = defaultdict(list)
+    session = SessionLocal()
+    try:
+        logs = (
+            session.query(TrackedQuery)
+            .filter(TrackedQuery.timestamp >= cutoff)
+            .order_by(TrackedQuery.timestamp)
+            .all()
+        )
+        print(f"[DEBUG] Matching logs: {len(logs)}")
+        return {
+            "labels": [q.timestamp.isoformat() for q in logs],
+            "durations": [q.duration_ms for q in logs],
+            "events": [q.event for q in logs],
+        }
+    finally:
+        session.close()
 
-    for log in logs:
-        # fallback if endpoint is not tracked explicitly
-        endpoint = log.get("endpoint") or log.get("function_name") or "UNKNOWN"
-        durations_by_endpoint[endpoint].append(log.get("duration_ms", 0))
 
-    # Build chart-ready response
-    return {
-        "labels": all_endpoints,
-        "durations": [
-            round(
-                sum(durations_by_endpoint.get(ep, []))
-                / max(1, len(durations_by_endpoint.get(ep, []))),
-                2,
-            )
-            for ep in all_endpoints
-        ],
-    }
+@app.get("/debug/queries")
+def debug_queries():
+    session = SessionLocal()
+    try:
+        rows = (
+            session.query(TrackedQuery)
+            .order_by(TrackedQuery.timestamp.desc())
+            .limit(5)
+            .all()
+        )
+        return [
+            {
+                "timestamp": r.timestamp,
+                "duration_ms": r.duration_ms,
+                "event": r.event,
+            }
+            for r in rows
+        ]
+    finally:
+        session.close()
 
 
 @app.websocket("/ws")
