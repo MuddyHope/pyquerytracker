@@ -5,7 +5,19 @@ import tempfile
 
 
 def run_test_in_subprocess(script: str, export_path: str):
-    subprocess.run(["python3", "-c", script], check=True)
+    print("\n----- Running Script -----\n")
+    print(script)
+    print("\n--------------------------\n")
+
+    try:
+        subprocess.run(
+            ["python3", "-c", script], check=True, capture_output=True, text=True
+        )
+    except subprocess.CalledProcessError as e:
+        print("STDOUT:\n", e.stdout)
+        print("STDERR:\n", e.stderr)
+        raise
+
     assert os.path.exists(export_path)
     with open(export_path) as f:
         return json.load(f)
@@ -32,6 +44,8 @@ def foo(x, y):
     return x + y
 
 foo(1, 2)
+from pyquerytracker.exporter.manager import ExporterManager
+ExporterManager.get().flush()
 """
 
         logs = run_test_in_subprocess(script, export_path)
@@ -68,6 +82,10 @@ try:
     bar()
 except RuntimeError:
     pass
+
+from pyquerytracker.exporter.manager import ExporterManager
+ExporterManager.get().flush()
+
 """
 
         logs = run_test_in_subprocess(script, export_path)
@@ -101,6 +119,10 @@ def slow_func():
     return "done"
 
 slow_func()
+
+from pyquerytracker.exporter.manager import ExporterManager
+ExporterManager.get().flush()
+
 """
 
         logs = run_test_in_subprocess(script, export_path)
@@ -141,6 +163,10 @@ try:
 except Exception:
     pass
 a()
+
+from pyquerytracker.exporter.manager import ExporterManager
+ExporterManager.get().flush()
+
 """
 
         logs = run_test_in_subprocess(script, export_path)

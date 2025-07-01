@@ -5,3 +5,8 @@ black
 isort
 pylint
 pytest-asyncio
+fastapi
+uvicorn
+httpx
+sqlalchemy
+jinja2

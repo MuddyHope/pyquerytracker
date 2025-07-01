@@ -29,6 +29,7 @@ async def test_async_tracking_output(caplog):
 
 
 async def test_async_tracking_output_with_error(caplog):
+    configure(slow_log_threshold_ms=10, slow_log_level=40)
     caplog.set_level("ERROR")
 
     @TrackQuery()
@@ -49,6 +50,7 @@ async def test_async_tracking_output_with_error(caplog):
 
 
 async def test_async_tracking_with_class(caplog):
+    configure(slow_log_threshold_ms=1000, slow_log_level=logging.INFO)
     caplog.set_level("INFO")
 
     class MyAsyncClass:
@@ -68,14 +70,15 @@ async def test_async_tracking_with_class(caplog):
 
 
 async def test_async_configure_slow_log(caplog):
+    configure(slow_log_threshold_ms=10, slow_log_level=40)
+    caplog.set_level("ERROR", logger="pyquerytracker")
+
+    @TrackQuery()
+    async def do_slow_async_work():
+        await asyncio.sleep(0.1)
+        return "slow"
+
     try:
-        configure(slow_log_threshold_ms=50, slow_log_level=logging.ERROR)
-
-        @TrackQuery()
-        async def do_slow_async_work():
-            await asyncio.sleep(0.1)
-            return "slow"
-
         result = await do_slow_async_work()
         assert result == "slow"
         assert len(caplog.records) == 1

@@ -1,3 +1,4 @@
+
 ![GitHub Release](https://img.shields.io/github/v/release/MuddyHope/pyquerytracker)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/MuddyHope/pyquerytracker)
 
@@ -33,8 +34,24 @@
 pip install pyquerytracker
 ```
 
-## Usage
+## 🔧 Configuration
+
+```python
+import logging
+from pyquerytracker.config import configure
+
+configure(
+    slow_log_threshold_ms=200,     # Log queries slower than 200ms
+    slow_log_level=logging.DEBUG   # Use DEBUG level for slow logs
+)
+```
+
+---
+
+## ⚙️ Usage
+
 ### Basic Usage
+
 ```python
 import time
 from pyquerytracker import TrackQuery
@@ -46,26 +63,81 @@ def run_query():
 
 run_query()
 ```
-### Output
-```bash
+
+**Output:**
+```
 2025-06-14 14:23:00,123 - pyquerytracker - INFO - Function run_query executed successfully in 305.12ms
 ```
 
-### With Configure
+---
+
+### 🧩 Async Support
+
+Use the same decorator with `async` functions or class methods:
+
+```python
+import asyncio
+from pyquerytracker import TrackQuery
+
+@TrackQuery()
+async def fetch_data():
+    await asyncio.sleep(0.2)
+    return "fetched"
+
+class MyService:
+    @TrackQuery()
+    async def do_work(self, x, y):
+        await asyncio.sleep(0.1)
+        return x + y
+
+asyncio.run(fetch_data())
 ```
-import logging
+
+---
+
+### 🌐 Run the FastAPI Server
+
+To view tracked query logs via REST, WebSocket, or a Web-based dashboard, start the built-in FastAPI server:
+
+```bash
+uvicorn pyquerytracker.api:app --reload
+```
+
+- ⚠️ If your project or file structure is different, replace `pyquerytracker.api` with your own module path, like `<your_project_name>.<your_server(file)_name>`.
+
+- Open docs at [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Query Dashboard UI:** [http://localhost:8000/dashboard](http://localhost:8000/dashboard)
+- REST endpoint: `GET /queries`
+- WebSocket stream: `ws://localhost:8000/ws`
+
+Then run your tracked functions in another terminal or script:
+
+```python
+@TrackQuery()
+def insert_query():
+    time.sleep(0.4)
+    return "INSERT INTO users ..."
+```
+
+You’ll see logs live on the server via API/WebSocket.
+
+---
+
+## 📤 Export Logs
+
+Enable exporting to CSV or JSON by setting config:
+
+```python
 from pyquerytracker.config import configure
 
 configure(
-    slow_log_threshold_ms=200,     # Log queries slower than 200ms
-    slow_log_level=logging.DEBUG   # Use DEBUG level for slow logs
+    export_type="json",
+    export_path="./query_logs.json"
 )
 ```
 
-### Output
-```bash
-2025-06-14 14:24:45,456 - pyquerytracker - WARNING - Slow execution: run_query took 501.87ms
-```
+---
 
+Let us know how you’re using `pyquerytracker` and feel free to contribute!
 
 

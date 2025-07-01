@@ -37,6 +37,8 @@ class Config:
     slow_log_level: int = logging.WARNING
     export_type: Optional[ExportType] = None
     export_path: Optional[str] = None
+    dashboard_enabled: bool = True  # ← set to False in real deployments
+    persist_to_db: bool = True
 
 
 _config: Config = Config()
