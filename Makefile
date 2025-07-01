@@ -8,4 +8,4 @@ lint:
 	# Run linters
 	flake8 .
 	pylint pyquerytracker/
-	@echo "Linting complete."
+	@echo "Linting complete." 

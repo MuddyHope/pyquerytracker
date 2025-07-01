@@ -30,15 +30,16 @@ def get_query_stats(minutes: int = Query(5, ge=1, le=1440)):
     try:
         logs = (
             session.query(TrackedQuery)
-            .filter(TrackedQuery.timestamp >= cutoff)
+            .filter(TrackedQuery.timestamp >= cutoff)  # Now comparing text to text
             .order_by(TrackedQuery.timestamp)
             .all()
         )
         print(f"[DEBUG] Matching logs: {len(logs)}")
         return {
-            "labels": [q.timestamp.isoformat() for q in logs],
+            "labels": [q.timestamp for q in logs],
             "durations": [q.duration_ms for q in logs],
             "events": [q.event for q in logs],
+            "function_names": [q.function_name for q in logs],
         }
     finally:
         session.close()

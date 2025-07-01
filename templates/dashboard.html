@@ -298,7 +298,7 @@
                 }
 
                 const hasData = data && Array.isArray(data.labels) && data.labels.length > 0;
-                const safeData = hasData ? data : { labels: [], durations: [], events: [] };
+                const safeData = hasData ? data : { labels: [], durations: [], events: [], function_names: [] };
                 const chartData = this.prepareChartData(safeData, hasData);
 
                 this.chartInstance = new Chart(ctx, {
@@ -348,11 +348,26 @@
                                 borderColor: 'rgba(255, 255, 255, 0.1)',
                                 borderWidth: 1,
                                 callbacks: {
-                                    label: function(context) {
+                                    title(context) {
+                                        if (!context.length) return 'No data';
+
+                                        const index = context[0].dataIndex;
+                                        const rawDate = new Date(safeData.labels[index]);
+
+                                        const formattedDateTime = rawDate.getFullYear() +
+                                            '-' + String(rawDate.getMonth() + 1).padStart(2, '0') +
+                                            '-' + String(rawDate.getDate()).padStart(2, '0') +
+                                            ' ' + String(rawDate.getHours()).padStart(2, '0') +
+                                            ':' + String(rawDate.getMinutes()).padStart(2, '0') +
+                                            ':' + String(rawDate.getSeconds()).padStart(2, '0');
+
+                                        const functionName = safeData.function_names[index];
+                                        return `${formattedDateTime} — ${functionName}`;
+                                    },
+                                    label(context) {
                                         if (!hasData) return 'No queries executed';
-                                        const event = safeData.events[context.dataIndex];
-                                        const duration = context.parsed.y;
-                                        return `Duration: ${duration}ms (${event})`;
+                                        const duration = context.parsed.y.toFixed(2);
+                                        return `Duration: ${duration} ms`;
                                     }
                                 }
                             }
@@ -439,12 +454,19 @@
 
 
             initializeChart() {
-                // Initialize with empty state immediately
-                this.showEmptyState();
-                // Then try to load real data
-                this.loadChart();
-            }
+                // Set the time window dropdown to 60 minutes
+                const defaultWindow = 60;
+                this.currentTimeWindow = defaultWindow;
+                document.getElementById("timeWindow").value = defaultWindow;
 
+                // Clear old data and load initial chart
+                this.clearError();
+                this.showEmptyState();
+                this.loadChart();
+
+                // User selection will take over on next interaction
+            }
+            
             showLoading(show) {
                 const loading = document.getElementById('loadingIndicator');
                 loading.style.display = show ? 'block' : 'none';
