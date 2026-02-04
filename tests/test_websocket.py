@@ -2,7 +2,7 @@ import asyncio
 
 from starlette.testclient import TestClient
 
-from pyquerytracker.api import app
+from pyquerytracker.app import app
 from pyquerytracker.websocket import (broadcast, connected_clients,
                                       websocket_endpoint)
 
